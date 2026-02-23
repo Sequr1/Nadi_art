@@ -36,7 +36,7 @@ export default function MainPage() {
     gifTimerRef.current = setTimeout(() => {
       setActiveGif(null);
       gifTimerRef.current = null;
-    }, 3000);
+    }, 5000);
   };
   // ===== КОНЕЦ НОВОГО =====
 
