@@ -9,7 +9,7 @@ import PaintingPage from './pages/PaintingPage';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/enter" element={<Landing />} />
@@ -19,7 +19,7 @@ function App() {
         <Route path="/project/:slug" element={<ProjectPage />} />
         <Route path="/painting/:slug" element={<PaintingPage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
