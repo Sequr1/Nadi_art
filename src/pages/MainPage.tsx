@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import ContactModal from '../components/ContactModal';
-import { sanityClient, queries, urlFor } from '../../sanity'; // Убедитесь, что путь к sanity.ts верный
-import type { Painting, Workshop, Installation, Project } from '../../types'; // Убедитесь, что путь к types.ts верный
+import { sanityClient, queries, urlFor } from '../lib/sanity'; // Убедитесь, что путь к sanity.ts верный
+import type { Painting, Workshop, Installation, Project } from '../types/index'; // Убедитесь, что путь к types.ts верный
 
 export default function MainPage() {
   const navigate = useNavigate();
