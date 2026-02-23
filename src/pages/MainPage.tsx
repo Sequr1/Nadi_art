@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import ContactModal from '../components/ContactModal';
@@ -17,7 +17,28 @@ export default function MainPage() {
   // Многоуровневый блок "Обо мне"
   const [expandedFact, setExpandedFact] = useState<number | null>(null);
   const [expandedSubFact, setExpandedSubFact] = useState<number | null>(null);
-  const [expandedDeepFact, setExpandedDeepFact] = useState<number | null>(null);
+
+  // ===== НОВОЕ: GIF popup вместо expandedDeepFact =====
+  const [activeGif, setActiveGif] = useState<{ url: string; key: number; emoji: string } | null>(null);
+  const gifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Очистка таймера при размонтировании
+  useEffect(() => {
+    return () => {
+      if (gifTimerRef.current) clearTimeout(gifTimerRef.current);
+    };
+  }, []);
+
+  // Показать GIF на 3 секунды
+  const showGif = (gifUrl: string, emoji: string) => {
+    if (gifTimerRef.current) clearTimeout(gifTimerRef.current);
+    setActiveGif({ url: gifUrl, key: Date.now(), emoji });
+    gifTimerRef.current = setTimeout(() => {
+      setActiveGif(null);
+      gifTimerRef.current = null;
+    }, 3000);
+  };
+  // ===== КОНЕЦ НОВОГО =====
 
   const categories = [
     {
@@ -54,12 +75,14 @@ export default function MainPage() {
     },
   ];
 
-  // Многоуровневые факты
+  // ===== ИЗМЕНЕНО: Единая структура — 1 кнопка → 1 подпункт → 2 подподпункта =====
+  // У каждого факта есть поле gif — путь к гифке в папке public/gifs/
   const aboutFacts = [
     {
       emoji: '🎨',
       title: 'Пишу из состояния',
       content: 'Каждая картина — это застывший момент внутреннего переживания.',
+      gif: '/gifs/night.gif', // <-- твоя гифка night.gif
       subFacts: [
         {
           icon: '💫',
@@ -68,36 +91,32 @@ export default function MainPage() {
           deepFacts: [
             { icon: '🌙', text: 'Часто работаю ночью, когда мир затихает' },
             { icon: '🎵', text: 'Музыка помогает войти в нужное состояние' },
-          ]
+          ],
         },
+      ],
     },
     {
       emoji: '🌊',
       title: 'Люблю стихии',
       content: 'Горы, море, ветер — они напоминают о постоянном движении.',
+      gif: '/gifs/sea.gif', // <-- замени на свою гифку
       subFacts: [
         {
           icon: '⛰️',
-          title: 'Горы',
-          content: 'Учат терпению и масштабу.',
+          title: 'Горы и море',
+          content: 'Учат терпению, масштабу и напоминают о бесконечности.',
           deepFacts: [
             { icon: '🏔️', text: 'Каждый год езжу в горы за вдохновением' },
-          ]
+            { icon: '🌅', text: 'Море напоминает о бесконечности' },
+          ],
         },
-        {
-          icon: '🌅',
-          title: 'Море',
-          content: 'Напоминает о бесконечности.',
-          deepFacts: [
-            { icon: '🏔️', text: 'Каждый год езжу в горы за вдохновением' },
-            ]
-        }
-      ]
+      ],
     },
     {
       emoji: '💜',
       title: 'Фиолетовый — мой цвет',
       content: 'Творчество, свобода, духовность.',
+      gif: '/gifs/violet.gif', // <-- замени на свою гифку
       subFacts: [
         {
           icon: '🔮',
@@ -105,37 +124,33 @@ export default function MainPage() {
           content: 'От нежной сирени до глубокого аметиста.',
           deepFacts: [
             { icon: '✨', text: 'В каждой работе есть хотя бы намёк на фиолетовый' },
-          ]
-        }
-      ]
+            { icon: '🎨', text: 'Фиолетовый — цвет между небом и землёй' },
+          ],
+        },
+      ],
     },
     {
       emoji: '✨',
       title: 'Люблю удивляться',
       content: 'Самое интересное — когда появляется неожиданное.',
+      gif: '/gifs/surprise.gif', // <-- замени на свою гифку
       subFacts: [
         {
           icon: '🎭',
           title: 'Эксперименты',
           content: 'Пробую новые техники и материалы.',
           deepFacts: [
-            { icon: '✨', text: 'В каждой работе есть хотя бы намёк на фиолетовый' },
-            ]
+            { icon: '🧪', text: 'Смешиваю акрил, масло и цифровое искусство' },
+            { icon: '🌟', text: 'Каждая работа — это маленькое открытие' },
+          ],
         },
-        {
-          icon: '🌟',
-          title: 'Открытия',
-          content: 'Каждая работа — это маленькое открытие.',
-          deepFacts: [
-            { icon: '✨', text: 'В каждой работе есть хотя бы намёк на фиолетовый' },
-            ]
-        }
-      ]
+      ],
     },
     {
       emoji: '🤝',
       title: 'Ценю диалог',
       content: 'Искусство — это не монолог. Важно делиться и слышать отклик.',
+      gif: '/gifs/dialog.gif', // <-- замени на свою гифку
       subFacts: [
         {
           icon: '💬',
@@ -144,11 +159,12 @@ export default function MainPage() {
           deepFacts: [
             { icon: '☕', text: 'За чашкой чая рождаются лучшие идеи' },
             { icon: '📝', text: 'Всегда открыта для совместных проектов' },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     },
   ];
+  // ===== КОНЕЦ ИЗМЕНЕНИЙ =====
 
   return (
     <div className="min-h-screen bg-milk">
@@ -462,7 +478,7 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* Блок "Обо мне" — МНОГОУРОВНЕВЫЙ */}
+      {/* ===== Блок "Обо мне" — ИЗМЕНЁННЫЙ ===== */}
       <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk to-lavender-soft/20 relative overflow-hidden">
         {/* Декоративные круги */}
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-violet-smoke/10 rounded-full blur-3xl" />
@@ -518,7 +534,6 @@ export default function MainPage() {
                   onClick={() => {
                     setExpandedFact(expandedFact === index ? null : index);
                     setExpandedSubFact(null);
-                    setExpandedDeepFact(null);
                   }}
                   className="p-6 cursor-pointer"
                 >
@@ -566,7 +581,7 @@ export default function MainPage() {
                   </p>
                 </div>
 
-                {/* Уровень 2 — Подфакты */}
+                {/* Уровень 2 — Подфакты (ровно 1 подпункт) */}
                 {expandedFact === index && fact.subFacts && (
                   <div className="px-6 pb-6 space-y-3 animate-unfold">
                     <div className="h-px bg-gradient-to-r from-transparent via-lavender-soft to-transparent mb-4" />
@@ -584,7 +599,6 @@ export default function MainPage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             setExpandedSubFact(expandedSubFact === subIndex ? null : subIndex);
-                            setExpandedDeepFact(null);
                           }}
                           className="p-4 cursor-pointer"
                         >
@@ -614,7 +628,7 @@ export default function MainPage() {
                           </p>
                         </div>
 
-                        {/* Уровень 3 — Глубокие факты */}
+                        {/* ===== Уровень 3 — ИЗМЕНЕНО: клик вызывает GIF ===== */}
                         {expandedSubFact === subIndex && subFact.deepFacts && (
                           <div className="px-4 pb-4 space-y-2 animate-reveal-right">
                             {subFact.deepFacts.map((deepFact, deepIndex) => (
@@ -622,33 +636,28 @@ export default function MainPage() {
                                 key={deepIndex}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setExpandedDeepFact(expandedDeepFact === deepIndex ? null : deepIndex);
+                                  // Вызываем GIF попап!
+                                  showGif(fact.gif, fact.emoji);
                                 }}
-                                className={`ml-6 p-3 rounded-xl transition-all duration-300 cursor-pointer ${
-                                  expandedDeepFact === deepIndex 
-                                    ? 'bg-white shadow-md animate-pop-in' 
-                                    : 'bg-white/50 hover:bg-white/80'
-                                }`}
+                                className="ml-6 p-3 rounded-xl transition-all duration-300 cursor-pointer bg-white/50 hover:bg-white hover:shadow-md active:scale-[0.97] group/deep"
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className={`transition-all duration-300 ${
-                                    expandedDeepFact === deepIndex ? 'text-lg animate-wiggle' : 'text-base'
-                                  }`}>{deepFact.icon}</span>
-                                  <span className="text-text-secondary text-sm">{deepFact.text}</span>
+                                  <span className="text-base group-hover/deep:scale-125 transition-transform duration-300">
+                                    {deepFact.icon}
+                                  </span>
+                                  <span className="text-text-secondary text-sm group-hover/deep:text-amethyst transition-colors">
+                                    {deepFact.text}
+                                  </span>
+                                  {/* Подсказка "нажми" */}
+                                  <span className="ml-auto text-xs text-lavender/60 opacity-0 group-hover/deep:opacity-100 transition-opacity whitespace-nowrap">
+                                    нажми 🎬
+                                  </span>
                                 </div>
-                                
-                                {/* Мерцающие точки при раскрытии */}
-                                {expandedDeepFact === deepIndex && (
-                                  <div className="flex justify-center gap-1 mt-2">
-                                    <div className="w-1 h-1 bg-lavender rounded-full animate-twinkle" />
-                                    <div className="w-1 h-1 bg-amethyst rounded-full animate-twinkle" style={{ animationDelay: '0.3s' }} />
-                                    <div className="w-1 h-1 bg-lavender rounded-full animate-twinkle" style={{ animationDelay: '0.6s' }} />
-                                  </div>
-                                )}
                               </div>
                             ))}
                           </div>
                         )}
+                        {/* ===== КОНЕЦ ИЗМЕНЕНИЙ Уровень 3 ===== */}
                       </div>
                     ))}
                   </div>
@@ -785,6 +794,45 @@ export default function MainPage() {
       {showContactModal && (
         <ContactModal onClose={() => setShowContactModal(false)} />
       )}
+
+      {/* ===== НОВОЕ: GIF Popup — вылетает на 3 секунды ===== */}
+      {activeGif && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
+          {/* Лёгкий полупрозрачный фон */}
+          <div className="absolute inset-0 bg-milk/15 backdrop-blur-[2px] animate-fade-in" />
+          
+          {/* Контейнер с анимацией вылета */}
+          <div 
+            key={activeGif.key}
+            className="relative animate-gif-fly"
+          >
+            {/* Свечение позади */}
+            <div className="absolute -inset-6 bg-amethyst/15 rounded-[2rem] blur-2xl animate-breathe" />
+            
+            {/* Карточка с GIF */}
+            <div className="relative w-64 h-64 md:w-72 md:h-72 rounded-3xl overflow-hidden shadow-2xl shadow-amethyst/30 border-2 border-white/60">
+              {/* Фоновый градиент + эмодзи (видны пока GIF загружается или если его нет) */}
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender-soft via-lavender to-amethyst/50 flex items-center justify-center">
+                <span className="text-7xl animate-bounce-soft drop-shadow-lg">{activeGif.emoji}</span>
+              </div>
+              
+              {/* GIF картинка поверх фона */}
+              <img 
+                src={activeGif.url} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-cover z-10"
+              />
+            </div>
+            
+            {/* Искорки вокруг */}
+            <div className="absolute -top-4 -right-4 text-2xl animate-twinkle">✨</div>
+            <div className="absolute -bottom-3 -left-4 text-xl animate-twinkle" style={{ animationDelay: '0.4s' }}>💫</div>
+            <div className="absolute top-1/2 -right-5 text-lg animate-twinkle" style={{ animationDelay: '0.8s' }}>⭐</div>
+            <div className="absolute -top-3 left-1/3 text-sm animate-twinkle" style={{ animationDelay: '1.2s' }}>🌟</div>
+          </div>
+        </div>
+      )}
+      {/* ===== КОНЕЦ GIF Popup ===== */}
     </div>
   );
 }
