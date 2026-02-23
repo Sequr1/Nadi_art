@@ -40,6 +40,18 @@ export default function MainPage() {
   };
   // ===== КОНЕЦ НОВОГО =====
 
+  // ===== НОВОЕ: ref для плавного скролла к разделу =====
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    // Даём время на перерисовку, потом скроллим
+    setTimeout(() => {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+  // ===== КОНЕЦ =====
+
   const categories = [
     {
       id: 'paintings',
@@ -214,7 +226,13 @@ export default function MainPage() {
       </nav>
 
       {/* Hero — Компактный */}
-      <section className="pt-28 pb-8 px-6 md:px-12 relative">
+      <section className="pt-28 pb-8 px-6 md:px-12 relative overflow-hidden">
+        {/* ===== МЯТНАЯ ПУЛЬСАЦИЯ ===== */}
+        <div className="absolute top-10 left-1/3 w-[500px] h-[500px] bg-mint/20 rounded-full animate-mint-pulse pointer-events-none" />
+        <div className="absolute top-32 right-1/4 w-[350px] h-[350px] bg-mint-soft/25 rounded-full animate-mint-pulse pointer-events-none" style={{ animationDelay: '3s' }} />
+        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-mint-deep/10 rounded-full animate-mint-pulse pointer-events-none" style={{ animationDelay: '5s' }} />
+        {/* ===== КОНЕЦ МЯТНОЙ ПУЛЬСАЦИИ ===== */}
+
         <div className="max-w-4xl mx-auto text-center opacity-0 animate-fade-in-up">
           <h1 className="font-serif font-light text-4xl md:text-5xl lg:text-6xl text-text-primary mb-4 leading-tight">
             Искусство как
@@ -231,7 +249,7 @@ export default function MainPage() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActiveSection(cat.id)}
+              onClick={() => scrollToSection(cat.id)}
               className={`group relative overflow-hidden rounded-2xl p-4 md:p-5 text-left transition-all duration-500 ${
                 activeSection === cat.id 
                   ? `bg-gradient-to-br ${cat.gradient} shadow-lg shadow-lavender/20` 
@@ -318,7 +336,7 @@ export default function MainPage() {
       </div>
 
       {/* Развернутый раздел */}
-      <section className="px-6 md:px-12 pb-20 bg-white/30 animate-fade-in">
+      <section ref={sectionRef} className="px-6 md:px-12 pb-20 bg-white/30 animate-fade-in scroll-mt-24">
         <div className="max-w-7xl mx-auto">
           {/* Заголовок раздела */}
           <div className="text-center mb-12">
@@ -479,10 +497,13 @@ export default function MainPage() {
       </section>
 
       {/* ===== Блок "Обо мне" — ИЗМЕНЁННЫЙ ===== */}
-      <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk to-lavender-soft/20 relative overflow-hidden">
-        {/* Декоративные круги */}
+      <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk via-mint-light/20 to-lavender-soft/20 relative overflow-hidden">
+        {/* Декоративные круги — фиолетовые + мятные */}
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-violet-smoke/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-lavender-soft/20 rounded-full blur-3xl" />
+        {/* Мятное свечение — переходный свет */}
+        <div className="absolute top-1/4 right-[10%] w-[400px] h-[400px] bg-mint/10 rounded-full blur-3xl animate-breathe" />
+        <div className="absolute bottom-1/3 left-[5%] w-[350px] h-[350px] bg-mint-soft/15 rounded-full blur-3xl animate-float" />
         
         {/* Плавающие цветочки */}
         <div className="absolute top-20 right-20 animate-float-around opacity-30">
