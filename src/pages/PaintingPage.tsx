@@ -82,8 +82,8 @@ export default function PaintingPage() {
             )}
             
             <div className="flex items-center justify-center gap-4 text-text-muted text-sm">
-              {painting.technique && <span>{painting.technique}</span>}
-              {painting.technique && painting.year && <span>·</span>}
+              {painting.format && <span>{painting.format === 'small' ? 'Малый формат' : painting.format === 'medium' ? 'Средний формат' : 'Большой формат'}</span>}
+              {painting.format && painting.year && <span>·</span>}
               {painting.year && <span>{painting.year}</span>}
             </div>
           </div>
