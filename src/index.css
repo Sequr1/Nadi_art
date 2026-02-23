@@ -20,10 +20,7 @@
   --color-text-primary: #3D3852;
   --color-text-secondary: #6B6280;
   --color-text-muted: #9992A8;
-  --color-mint: #A8E6CF;
-  --color-mint-soft: #C8F0DE;
-  --color-mint-light: #E0F7EC;
-  --color-mint-deep: #7CCBA2;
+
 }
 
 @theme {
@@ -46,6 +43,10 @@
   --color-text-primary: #3D3852;
   --color-text-secondary: #6B6280;
   --color-text-muted: #9992A8;
+  --color-mint: #A8E6CF;
+  --color-mint-soft: #C8F0DE;
+  --color-mint-light: #E0F7EC;
+  --color-mint-deep: #7CCBA2;
 
   /* Fonts */
   --font-serif: 'Cormorant Garamond', Georgia, serif;
@@ -58,6 +59,7 @@
   --animate-float: float 8s ease-in-out infinite;
   --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
   --animate-mint-pulse: mint-pulse 8s ease-in-out infinite;
+  --animate-gif-fly: gif-fly 3s ease-in-out forwards;
 }
 
 * {
@@ -111,6 +113,40 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@keyframes mint-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.15; filter: blur(60px); }
+  30% { transform: scale(1.15); opacity: 0.3; filter: blur(80px); }
+  60% { transform: scale(0.95); opacity: 0.1; filter: blur(50px); }
+  80% { transform: scale(1.1); opacity: 0.25; filter: blur(70px); }
+}
+@keyframes gif-fly {
+  0% {
+    opacity: 0;
+    transform: translateY(120px) scale(0.2) rotate(-8deg);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1.08) rotate(2deg);
+  }
+  18% {
+    transform: translateY(5px) scale(0.97) rotate(-1deg);
+  }
+  25% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  90% {
+    opacity: 0.5;
+    transform: translateY(-40px) scale(0.85) rotate(3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.6) rotate(5deg);
   }
 }
 
