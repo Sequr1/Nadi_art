@@ -234,13 +234,14 @@ export default function MainPage() {
         </div>
       </nav>
 
+      {/* ===== МЯТНАЯ ПУЛЬСАЦИЯ — вынесена за пределы Hero, чтобы не обрезалась ===== */}
+      <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-mint/20 rounded-full animate-mint-pulse pointer-events-none z-0" />
+      <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-mint-soft/25 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '3s' }} />
+      <div className="absolute top-[350px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-mint-deep/10 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '5s' }} />
+      {/* ===== КОНЕЦ МЯТНОЙ ПУЛЬСАЦИИ ===== */}
+
       {/* Hero — Компактный */}
-      <section className="pt-28 pb-8 px-6 md:px-12 relative overflow-hidden">
-        {/* ===== МЯТНАЯ ПУЛЬСАЦИЯ ===== */}
-        <div className="absolute top-10 left-1/3 w-[500px] h-[500px] bg-mint/20 rounded-full animate-mint-pulse pointer-events-none" />
-        <div className="absolute top-32 right-1/4 w-[350px] h-[350px] bg-mint-soft/25 rounded-full animate-mint-pulse pointer-events-none" style={{ animationDelay: '3s' }} />
-        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-mint-deep/10 rounded-full animate-mint-pulse pointer-events-none" style={{ animationDelay: '5s' }} />
-        {/* ===== КОНЕЦ МЯТНОЙ ПУЛЬСАЦИИ ===== */}
+      <section className="pt-28 pb-8 px-6 md:px-12 relative">
 
         <div className="max-w-4xl mx-auto text-center opacity-0 animate-fade-in-up">
           <h1 className="font-serif font-light text-4xl md:text-5xl lg:text-6xl text-text-primary mb-4 leading-tight">
