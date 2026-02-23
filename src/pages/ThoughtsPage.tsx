@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 interface Thought {
@@ -7,7 +7,6 @@ interface Thought {
   text: string;
   time: string;
   mood?: string;
-  delay?: number;
 }
 
 const thoughts: Thought[] = [
@@ -146,12 +145,48 @@ const thoughts: Thought[] = [
   },
 ];
 
-export default function ThoughtsPage() {
-  const [visibleCount, setVisibleCount] = useState(10);
-  const visibleThoughts = thoughts.slice(0, visibleCount);
-  const hasMore = thoughts.length > visibleCount;
+const BATCH_SIZE = 10;
 
-  // Группируем сообщения по «сессиям» (последовательные сообщения от одного отправителя)
+export default function ThoughtsPage() {
+  // Сколько записок показывать (считая от конца)
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const topAnchorRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+
+  // Вычисляем видимые записки: берём последние N из массива
+  const startIndex = Math.max(0, thoughts.length - visibleCount);
+  const visibleThoughts = thoughts.slice(startIndex);
+  const hasPrevious = startIndex > 0;
+  const previousCount = startIndex;
+
+  // При первом рендере скроллим вниз (к последнему сообщению)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Скроллим к самому низу чата
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+      }, 100);
+    }
+  }, []);
+
+  // Подгрузить предыдущие
+  const loadPrevious = () => {
+    // Запоминаем текущую высоту скролла
+    const scrollHeightBefore = document.documentElement.scrollHeight;
+    
+    setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, thoughts.length));
+
+    // После добавления новых сообщений сверху — сохраняем позицию скролла
+    setTimeout(() => {
+      const scrollHeightAfter = document.documentElement.scrollHeight;
+      const diff = scrollHeightAfter - scrollHeightBefore;
+      window.scrollBy({ top: diff, behavior: 'auto' });
+    }, 50);
+  };
+
+  // Группируем сообщения
   const groupedMessages: { side: 'artist' | 'universe'; messages: Thought[] }[] = [];
   visibleThoughts.forEach((thought) => {
     const lastGroup = groupedMessages[groupedMessages.length - 1];
@@ -223,16 +258,32 @@ export default function ThoughtsPage() {
         </div>
       </div>
 
+      {/* Кнопка «Посмотреть предыдущие» — СВЕРХУ чата */}
+      <div ref={topAnchorRef} />
+      {hasPrevious && (
+        <div className="relative z-10 text-center py-6">
+          <button
+            onClick={loadPrevious}
+            className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/70 hover:bg-white border border-lavender-soft/40 hover:border-lavender/40 text-text-secondary hover:text-amethyst transition-all duration-500 shadow-sm hover:shadow-md"
+          >
+            <svg className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 15l7-7 7 7" />
+            </svg>
+            Посмотреть предыдущие ({previousCount})
+          </button>
+        </div>
+      )}
+
       {/* Чат */}
-      <div className="relative z-10 px-4 md:px-12 pb-20">
+      <div ref={chatContainerRef} className="relative z-10 px-4 md:px-12 pb-8">
         <div className="max-w-2xl mx-auto space-y-6">
           {groupedMessages.map((group, groupIndex) => (
             <div
-              key={groupIndex}
+              key={`${startIndex}-${groupIndex}`}
               className={`flex flex-col gap-2 opacity-0 animate-fade-in-up ${
                 group.side === 'artist' ? 'items-start' : 'items-end'
               }`}
-              style={{ animationDelay: `${groupIndex * 80}ms` }}
+              style={{ animationDelay: `${groupIndex * 60}ms` }}
             >
               {/* Метка отправителя — только первый раз в группе */}
               <div className={`flex items-center gap-2 px-1 ${
@@ -275,9 +326,7 @@ export default function ThoughtsPage() {
                     }`}
                   >
                     {/* Текст сообщения */}
-                    <p className={`font-light leading-relaxed ${
-                      group.side === 'artist' ? 'text-text-primary' : 'text-text-primary'
-                    }`}>
+                    <p className="font-light leading-relaxed text-text-primary">
                       {thought.text}
                     </p>
 
@@ -298,8 +347,8 @@ export default function ThoughtsPage() {
             </div>
           ))}
 
-          {/* Индикатор «печатает...» */}
-          <div className="flex items-start gap-2 opacity-0 animate-fade-in-up" style={{ animationDelay: `${groupedMessages.length * 80 + 200}ms` }}>
+          {/* Индикатор «печатает...» — внизу (после последнего сообщения) */}
+          <div className="flex items-start gap-2 opacity-0 animate-fade-in-up" style={{ animationDelay: `${groupedMessages.length * 60 + 200}ms` }}>
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-lavender to-amethyst flex items-center justify-center">
               <span className="text-xs text-white">Н</span>
             </div>
@@ -311,21 +360,6 @@ export default function ThoughtsPage() {
               </div>
             </div>
           </div>
-
-          {/* Показать ещё */}
-          {hasMore && (
-            <div className="text-center pt-6">
-              <button
-                onClick={() => setVisibleCount((prev) => prev + 10)}
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-mint-light/60 hover:bg-mint-soft/60 border border-mint/30 hover:border-mint/50 text-text-secondary hover:text-mint-deep transition-all duration-500"
-              >
-                <svg className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                </svg>
-                Ещё записки ({thoughts.length - visibleCount})
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
