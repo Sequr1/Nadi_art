@@ -6,6 +6,7 @@ import WorkshopPage from './pages/WorkshopPage';
 import InstallationPage from './pages/InstallationPage';
 import ProjectPage from './pages/ProjectPage';
 import PaintingPage from './pages/PaintingPage';
+import ThoughtsPage from './pages/ThoughtsPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/installation/:slug" element={<InstallationPage />} />
         <Route path="/project/:slug" element={<ProjectPage />} />
         <Route path="/painting/:slug" element={<PaintingPage />} />
+        <Route path="/thoughts" element={<ThoughtsPage />} />
       </Routes>
     </HashRouter>
   );
