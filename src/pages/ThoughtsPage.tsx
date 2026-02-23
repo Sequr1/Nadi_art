@@ -368,9 +368,9 @@ export default function ThoughtsPage() {
         <div className="max-w-md mx-auto text-center">
           <div className="inline-block bg-white/60 backdrop-blur-sm rounded-2xl px-6 py-5 border border-mint/20">
             <p className="text-text-muted font-light text-sm italic">
-              Этот диалог продолжается каждый день.
+              Этот диалог продолжается.
               <br />
-              Заходи снова — возможно, появятся новые мысли.
+              Заходи снова, чтобы узнать о чём думает художник.
             </p>
             <div className="flex items-center justify-center gap-2 mt-3">
               <div className="w-6 h-px bg-mint/40" />
