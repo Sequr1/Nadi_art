@@ -5,6 +5,7 @@ import MainPage from './pages/MainPage';
 import WorkshopPage from './pages/WorkshopPage';
 import InstallationPage from './pages/InstallationPage';
 import ProjectPage from './pages/ProjectPage';
+import PaintingPage from './pages/PaintingPage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/workshop/:slug" element={<WorkshopPage />} />
         <Route path="/installation/:slug" element={<InstallationPage />} />
         <Route path="/project/:slug" element={<ProjectPage />} />
+        <Route path="/painting/:slug" element={<PaintingPage />} />
       </Routes>
     </BrowserRouter>
   );
