@@ -20,6 +20,10 @@
   --color-text-primary: #3D3852;
   --color-text-secondary: #6B6280;
   --color-text-muted: #9992A8;
+  --color-mint: #A8E6CF;
+  --color-mint-soft: #C8F0DE;
+  --color-mint-light: #E0F7EC;
+  --color-mint-deep: #7CCBA2;
 }
 
 @theme {
@@ -53,6 +57,7 @@
   --animate-breathe: breathe 6s ease-in-out infinite;
   --animate-float: float 8s ease-in-out infinite;
   --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
+  --animate-mint-pulse: mint-pulse 8s ease-in-out infinite;
 }
 
 * {
