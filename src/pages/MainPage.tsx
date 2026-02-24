@@ -231,9 +231,9 @@ export default function MainPage() {
       </nav>
 
       {/* ===== МЯТНАЯ ПУЛЬСАЦИЯ — вынесена за пределы Hero, чтобы не обрезалась ===== */}
-      <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-mint/20 rounded-full animate-mint-pulse pointer-events-none z-0" />
-      <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-mint-soft/25 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '3s' }} />
-      <div className="absolute top-[350px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-mint-deep/10 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '5s' }} />
+      <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-mint/50 rounded-full animate-mint-pulse pointer-events-none z-0" />
+      <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-mint-soft/55 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '3s' }} />
+      <div className="absolute top-[350px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-mint-deep/45 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '5s' }} />
       {/* ===== КОНЕЦ МЯТНОЙ ПУЛЬСАЦИИ ===== */}
 
       {/* Hero — Компактный */}
