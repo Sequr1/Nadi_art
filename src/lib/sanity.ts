@@ -3,9 +3,9 @@ import imageUrlBuilder from '@sanity/image-url';
 
 // Конфигурация Sanity - замените на ваши данные
 export const sanityConfig = {
- projectId: wombesw7,
-dataset: production,
-  apiVersion: '2024-01-01',
+  projectId: "wombesw7",
+  dataset: "production",
+  apiVersion: "2024-01-01",
   useCdn: false,
 };
 
