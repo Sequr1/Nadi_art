@@ -38,10 +38,10 @@ export default function InstallationPage() {
       </button>
 
       {/* Hero */}
-      {installation.coverImage && (
+      {installation.heroImage && (
         <div className="relative h-[60vh] overflow-hidden">
           <img
-            src={urlFor(installation.coverImage).width(2000).url()}
+            src={urlFor(installation.heroImage).width(2000).url()}
             alt={installation.title}
             className="w-full h-full object-cover"
           />
