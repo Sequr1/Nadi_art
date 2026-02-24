@@ -3,8 +3,8 @@ import imageUrlBuilder from '@sanity/image-url';
 
 // Конфигурация Sanity - замените на ваши данные
 export const sanityConfig = {
-  projectId: import.meta.env.VITE_SANITY_PROJECT_ID || 'wombesw7',
-  dataset: import.meta.env.VITE_SANITY_DATASET || 'production',
+ projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
+dataset: import.meta.env.VITE_SANITY_DATASET,
   apiVersion: '2024-01-01',
   useCdn: true,
 };
