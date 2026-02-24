@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { sanityClient, queries, urlFor } from "../lid/sanity";
+import { sanityClient, queries, urlFor } from "../lib/sanity";
 import ContactModal from "../components/ContactModal";
 
 export default function InstallationPage() {
