@@ -1,180 +1,99 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { sanityClient, queries, urlFor } from "../lib/sanity";
-import ContactModal from "../components/ContactModal";
+import { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { defaultInstallations } from '../types';
+import ContactModal from '../components/ContactModal';
+import FlexibleContent from '../components/FlexibleContent';
 
 export default function InstallationPage() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [installation, setInstallation] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [showContactModal, setShowContactModal] = useState(false);
 
-  useEffect(() => {
-    if (!slug) return;
+  const installation = defaultInstallations.find((i) => i.slug === slug);
 
-    sanityClient
-      .fetch(queries.installationBySlug(slug))
-      .then((data) => {
-        setInstallation(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [slug]);
-
-  if (loading) return <div className="p-10">Loading...</div>;
-  if (!installation) return <div className="p-10">Not found</div>;
+  if (!installation) {
+    return (
+      <div className="min-h-screen bg-milk flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-text-muted text-lg mb-4">Инсталляция не найдена</p>
+          <button onClick={() => navigate(-1)} className="btn-primary">Вернуться назад</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-milk">
-
-      {/* Кнопка назад */}
-      <button
-        onClick={() => navigate(-1)}
-        className="fixed top-6 left-6 z-50 bg-white/80 px-4 py-2 rounded-full"
-      >
-        Назад
-      </button>
-
-      {/* HERO */}
-      {installation.heroVideo ? (
-        <div className="aspect-video w-full">
-          <iframe
-            src={installation.heroVideo}
-            className="w-full h-full"
-            allowFullScreen
-          />
-        </div>
-      ) : installation.heroImage ? (
-        <div className="h-[60vh] overflow-hidden">
-          <img
-            src={urlFor(installation.heroImage).width(2000).url()}
-            alt={installation.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ) : null}
-
-      <div className="max-w-4xl mx-auto px-6 py-16">
-
-        <h1 className="text-4xl mb-6">{installation.title}</h1>
-
-        <div className="flex gap-6 text-gray-500 mb-8">
-          {installation.location && <span>{installation.location}</span>}
-          {installation.year && <span>{installation.year}</span>}
-        </div>
-
-        {installation.description && (
-          <p className="text-lg leading-relaxed mb-12">
-            {installation.description}
-          </p>
-        )}
-
-        {/* FLEXIBLE CONTENT */}
-        {installation.content?.map((block: any, index: number) => {
-          switch (block._type) {
-
-            case "textBlock":
-              return (
-                <div key={index} className="prose mb-10">
-                  {block.text?.map((p: any, i: number) => (
-                    <p key={i}>{p.children?.map((c: any) => c.text)}</p>
-                  ))}
-                </div>
-              );
-
-            case "imageBlock":
-              return (
-                <div key={index} className="mb-10">
-                  <img
-                    src={urlFor(block.image).width(1200).url()}
-                    className="rounded-2xl"
-                  />
-                  {block.caption && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      {block.caption}
-                    </p>
-                  )}
-                </div>
-              );
-
-            case "galleryBlock":
-              return (
-                <div key={index} className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-                  {block.images?.map((img: any, i: number) => (
-                    <img
-                      key={i}
-                      src={urlFor(img).width(800).url()}
-                      className="rounded-xl object-cover"
-                    />
-                  ))}
-                </div>
-              );
-
-            case "videoBlock":
-              return (
-                <div key={index} className="aspect-video mb-10">
-                  <iframe
-                    src={block.url}
-                    className="w-full h-full"
-                    allowFullScreen
-                  />
-                </div>
-              );
-
-            case "quoteBlock":
-              return (
-                <blockquote key={index} className="text-2xl italic my-16 text-center">
-                  “{block.text}”
-                  {block.author && (
-                    <div className="text-sm mt-4">— {block.author}</div>
-                  )}
-                </blockquote>
-              );
-
-            case "processBlock":
-              return (
-                <div key={index} className="mb-16">
-                  <h2 className="text-2xl mb-6">{block.title}</h2>
-                  {block.steps?.map((step: any, i: number) => (
-                    <div key={i} className="mb-8">
-                      <h3 className="font-semibold mb-2">{step.title}</h3>
-                      <p className="mb-4">{step.description}</p>
-                      {step.image && (
-                        <img
-                          src={urlFor(step.image).width(1000).url()}
-                          className="rounded-xl"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              );
-
-            default:
-              return null;
-          }
-        })}
-
-        {/* Кнопка */}
-        {installation.showBookingButton && (
-          <div className="text-center mt-16">
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="btn-primary"
-            >
-              {installation.bookingButtonText || "Посетить"}
-            </button>
-          </div>
-        )}
+      {/* Фоновые декорации */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-20 right-1/4 w-[400px] h-[400px] bg-emerald-100/20 rounded-full blur-3xl animate-breathe" />
+        <div className="absolute bottom-1/4 left-10 w-[300px] h-[300px] bg-teal-100/15 rounded-full blur-3xl animate-float" />
       </div>
 
-      {showContactModal && (
-        <ContactModal onClose={() => setShowContactModal(false)} />
-      )}
+      {/* Навигация */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 md:px-12 py-5 bg-milk/80 backdrop-blur-lg border-b border-lavender-soft/50">
+        <Link to="/" className="font-serif text-xl md:text-2xl text-text-primary tracking-wide hover:text-amethyst transition-colors duration-500">
+          Надя Сок
+        </Link>
+        <button onClick={() => navigate(-1)} className="text-sm text-text-secondary hover:text-amethyst transition-colors duration-500">
+          ← Назад
+        </button>
+      </nav>
+
+      {/* Контент */}
+      <div className="relative z-10 pt-28 pb-16 px-6 md:px-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Изображение */}
+          <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-10 shadow-xl shadow-text-primary/10 animate-fade-in-up">
+            <img src={installation.imageUrl} alt={installation.title} className="w-full h-full object-cover" />
+          </div>
+
+          {/* Информация */}
+          <div className="text-center max-w-2xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h1 className="font-serif text-4xl md:text-5xl text-text-primary mb-4">{installation.title}</h1>
+            <p className="text-text-secondary font-light text-lg leading-relaxed mb-6">{installation.description}</p>
+            
+            <div className="flex items-center justify-center gap-6 text-text-muted text-sm mb-10">
+              {installation.location && <span>📍 {installation.location}</span>}
+              {installation.year && <span>📅 {installation.year}</span>}
+            </div>
+          </div>
+
+          {/* Гибкий контент — текст, фото, видео в свободном порядке */}
+          {installation.content && installation.content.length > 0 && (
+            <div className="mt-12 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <FlexibleContent content={installation.content} />
+            </div>
+          )}
+
+          {/* Галерея если есть */}
+          {installation.gallery && installation.gallery.length > 0 && (
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+              {installation.gallery.map((img, idx) => (
+                <div key={idx} className="aspect-square rounded-2xl overflow-hidden">
+                  <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* CTA кнопка */}
+          {installation.showCTA && (
+            <div className="text-center mt-16 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+              <div className="inline-block bg-gradient-to-br from-lavender-soft/50 to-violet-smoke/30 rounded-3xl p-8 md:p-12">
+                <p className="text-text-secondary font-light mb-6 text-lg">
+                  Хотите узнать больше?
+                </p>
+                <button onClick={() => setShowContactModal(true)} className="btn-primary text-base px-10 py-4">
+                  Узнать больше
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showContactModal && <ContactModal onClose={() => setShowContactModal(false)} />}
     </div>
   );
 }
