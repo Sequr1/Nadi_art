@@ -822,28 +822,32 @@ export default function MainPage() {
         <ContactModal onClose={() => setShowContactModal(false)} />
       )}
 
-      {/* ===== НОВОЕ: GIF Popup — вылетает на 3 секунды ===== */}
+      {/* ===== GIF Popup — вылетает по центру экрана на 5 секунд ===== */}
       {activeGif && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
+        <div 
+          key={activeGif.key}
+          className="fixed inset-0 z-[150] pointer-events-none"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
           {/* Лёгкий полупрозрачный фон */}
-          <div className="absolute inset-0 bg-milk/15 backdrop-blur-[2px] animate-fade-in" />
+          <div className="absolute inset-0 bg-text-primary/10 backdrop-blur-[3px]" style={{ animation: 'fade-in 0.3s ease-out' }} />
           
-          {/* Контейнер с анимацией вылета */}
+          {/* Контейнер — строго по центру, с анимацией вылета */}
           <div 
-            key={activeGif.key}
-            className="relative animate-gif-fly"
+            className="relative z-10"
+            style={{ animation: 'gif-fly 5s ease-in-out forwards' }}
           >
             {/* Свечение позади */}
-            <div className="absolute -inset-6 bg-amethyst/15 rounded-[2rem] blur-2xl animate-breathe" />
+            <div className="absolute -inset-8 bg-amethyst/20 rounded-[2.5rem] blur-3xl animate-breathe" />
             
             {/* Карточка с GIF */}
-            <div className="relative w-64 h-64 md:w-72 md:h-72 rounded-3xl overflow-hidden shadow-2xl shadow-amethyst/30 border-2 border-white/60">
-              {/* Фоновый градиент + эмодзи (видны пока GIF загружается или если его нет) */}
+            <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden shadow-2xl shadow-amethyst/40 border-2 border-white/70">
+              {/* Фоновый градиент + эмодзи (пока GIF грузится) */}
               <div className="absolute inset-0 bg-gradient-to-br from-lavender-soft via-lavender to-amethyst/50 flex items-center justify-center">
                 <span className="text-7xl animate-bounce-soft drop-shadow-lg">{activeGif.emoji}</span>
               </div>
               
-              {/* GIF картинка поверх фона */}
+              {/* GIF картинка поверх */}
               <img 
                 src={activeGif.url} 
                 alt="" 
@@ -852,10 +856,10 @@ export default function MainPage() {
             </div>
             
             {/* Искорки вокруг */}
-            <div className="absolute -top-4 -right-4 text-2xl animate-twinkle">✨</div>
-            <div className="absolute -bottom-3 -left-4 text-xl animate-twinkle" style={{ animationDelay: '0.4s' }}>💫</div>
-            <div className="absolute top-1/2 -right-5 text-lg animate-twinkle" style={{ animationDelay: '0.8s' }}>⭐</div>
-            <div className="absolute -top-3 left-1/3 text-sm animate-twinkle" style={{ animationDelay: '1.2s' }}>🌟</div>
+            <div className="absolute -top-5 -right-5 text-2xl animate-twinkle">✨</div>
+            <div className="absolute -bottom-4 -left-5 text-xl animate-twinkle" style={{ animationDelay: '0.4s' }}>💫</div>
+            <div className="absolute top-1/2 -right-6 text-lg animate-twinkle" style={{ animationDelay: '0.8s' }}>⭐</div>
+            <div className="absolute -top-4 left-1/3 text-sm animate-twinkle" style={{ animationDelay: '1.2s' }}>🌟</div>
           </div>
         </div>
       )}
