@@ -21,39 +21,49 @@ export function urlFor(source: any) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// Общая проекция для гибкого контента (content[])
+//
+// Все schemas (painting, workshop, installation, project)
+// используют одинаковые блоки: textBlock, imageBlock,
+// videoBlock, galleryBlock, quoteBlock
+// + installation добавляет processBlock
+//
+// `...` — spread, чтобы ВСЕ поля пришли
+// Плюс разворачиваем вложенные image asset-ы в URL
+// ═══════════════════════════════════════════════════════════
+
+const contentProjection = `
+  content[]{
+    ...,
+    _type == "imageBlock" => {
+      ...,
+      image,
+      "imageUrl": image.asset->url
+    },
+    _type == "galleryBlock" => {
+      ...,
+      "images": images[]{
+        ...,
+        "url": asset->url
+      }
+    },
+    _type == "videoBlock" => {
+      ...,
+      "videoUrl": url
+    },
+    _type == "processBlock" => {
+      ...,
+      "steps": steps[]{
+        ...,
+        image,
+        "imageUrl": image.asset->url
+      }
+    }
+  }
+`;
+
+// ═══════════════════════════════════════════════════════════
 // GROQ запросы
-//
-// МАППИНГ ПОЛЕЙ (Schema → Frontend):
-//
-//   slug (type: slug)        → "slug": slug.current        → string
-//   image (type: image)      → image (raw для urlFor)
-//                              + "imageUrl": image.asset->url (для списков)
-//   heroImage                → heroImage (raw для urlFor)
-//                              + "imageUrl": heroImage.asset->url
-//   coverImage               → coverImage (raw для urlFor)
-//                              + "imageUrl": coverImage.asset->url
-//   projectType              → "type": projectType
-//   dateStart / dateEnd      → "startDate" / "endDate"
-//   collaborators            → "participants"
-//   showBookingButton        → "showCTA"
-//   sender (nadia/inner)     → "side" (artist/universe)
-//   emoji                    → "mood"
-//   states[] (references)    → "stateSlug": states[0]->slug.current
-//   year (number)            → string(year) для отображения
-//
-// КОНТЕНТ:
-//   content возвращается RAW — urlFor() работает с image references
-//
-// КТО КАКИЕ ЗАПРОСЫ ИСПОЛЬЗУЕТ:
-//   MainPage       → allWorkshops, allInstallations, allProjects, count(paintings)
-//   Gallery        → allPaintings, allStates
-//   PaintingPage   → paintingBySlug
-//   WorkshopPage   → workshopBySlug
-//   InstallationPage → installationBySlug
-//   ProjectPage    → projectBySlug
-//   Landing        → allStates
-//   StatePage      → stateBySlug
-//   ThoughtsPage   → allThoughts
 // ═══════════════════════════════════════════════════════════
 
 export const queries = {
@@ -73,11 +83,11 @@ export const queries = {
 
   // ─────────────────────────────────────────────
   // СОСТОЯНИЯ
-  // Используют: Landing (список), StatePage (детали), Gallery (фильтры)
+  // Landing: slug, title, audienceType, buttonLabel
+  // StatePage: всё
+  // Gallery: slug, title (для фильтров)
   // ─────────────────────────────────────────────
 
-  // Landing: state.slug, state.title, state.audienceType, state.buttonLabel
-  // Gallery: state.slug, state.title (для фильтров)
   allStates: `*[_type == "state"] | order(order asc){
     _id,
     "slug": slug.current,
@@ -88,11 +98,14 @@ export const queries = {
     stateText,
     heroMedia,
     heroVideo,
-    artistPresence,
+    artistPresence{
+      ...,
+      "photoUrl": photo.asset->url,
+      photo
+    },
     colorTheme
   }`,
 
-  // StatePage: state.title, heroText, stateText, audienceType, heroMedia, heroVideo, artistPresence, colorTheme
   stateBySlug: (slug: string) => `
     *[_type == "state" && slug.current == "${slug}"][0]{
       _id,
@@ -103,22 +116,22 @@ export const queries = {
       heroText,
       stateText,
       heroMedia,
+      "heroMediaUrl": heroMedia.asset->url,
       heroVideo,
-      artistPresence,
+      artistPresence{
+        ...,
+        "photoUrl": photo.asset->url,
+        photo
+      },
       colorTheme
     }
   `,
 
   // ─────────────────────────────────────────────
   // КАРТИНЫ
-  // Используют: Gallery (список), PaintingPage (детали), MainPage (count)
-  //
-  // Gallery использует:
-  //   painting.image ? urlFor(painting.image).width(800).url() : painting.imageUrl
-  //   → нужны ОБА: raw image + resolved imageUrl
-  //
-  // Schema: states[] (массив ссылок на state)
-  //   → "stateSlug": states[0]->slug.current (берём первое состояние)
+  // Gallery: id, slug, imageUrl, title, feeling, stateSlug, image (raw)
+  // PaintingPage: всё + content[]
+  // MainPage: count
   // ─────────────────────────────────────────────
 
   allPaintings: `*[_type == "painting"] | order(order asc){
@@ -135,12 +148,9 @@ export const queries = {
     technique,
     dimensions,
     available,
-    "stateSlug": states[0]->slug.current
+    "stateSlug": state->slug.current
   }`,
 
-  // PaintingPage использует:
-  //   painting.image ? urlFor(painting.image).width(1200).url() : painting.imageUrl
-  //   painting.title, feeling, description, technique, dimensions, year
   paintingBySlug: (slug: string) => `
     *[_type == "painting" && slug.current == "${slug}"][0]{
       "id": _id,
@@ -156,14 +166,13 @@ export const queries = {
       technique,
       dimensions,
       available,
-      "stateSlug": states[0]->slug.current,
-      content
+      "stateSlug": state->slug.current,
+      ${contentProjection}
     }
   `,
 
-  // StatePage: Gallery с фильтром по состоянию
   paintingsByState: (stateSlug: string) => `
-    *[_type == "painting" && "${stateSlug}" in states[]->slug.current] | order(order asc){
+    *[_type == "painting" && state->slug.current == "${stateSlug}"] | order(order asc){
       "id": _id,
       _id,
       "slug": slug.current,
@@ -174,25 +183,16 @@ export const queries = {
       "imageUrl": image.asset->url,
       "year": select(defined(year) => string(year), null),
       format,
-      "stateSlug": states[0]->slug.current
+      "stateSlug": state->slug.current
     }
   `,
 
   // ─────────────────────────────────────────────
   // МАСТЕР-КЛАССЫ
-  // Используют: MainPage (список карточек), WorkshopPage (детали)
-  //
-  // MainPage: workshop.imageUrl, title, description, duration, price, slug
-  //   → нужен resolved imageUrl
-  //
-  // WorkshopPage:
-  //   workshop.heroImage ? urlFor(workshop.heroImage).width(1200).url() : workshop.imageUrl
-  //   → нужны ОБА: raw heroImage + resolved imageUrl
-  //   + content для FlexibleContent
-  //   + showCTA || showBookingButton
+  // MainPage: slug, title, description, imageUrl, duration, price
+  // WorkshopPage: всё + heroImage (raw) + content[]
   // ─────────────────────────────────────────────
 
-  // Для MainPage — только resolved imageUrl
   allWorkshops: `*[_type == "workshop"] | order(order asc, date desc){
     _id,
     "slug": slug.current,
@@ -206,7 +206,6 @@ export const queries = {
     "showCTA": showBookingButton
   }`,
 
-  // Для WorkshopPage — raw heroImage + imageUrl + content
   workshopBySlug: (slug: string) => `
     *[_type == "workshop" && slug.current == "${slug}"][0]{
       _id,
@@ -220,29 +219,23 @@ export const queries = {
       price,
       "date": select(defined(date) => string(date), null),
       location,
-      content,
+      "gallery": gallery[]{
+        ...,
+        "url": asset->url
+      },
       "showCTA": showBookingButton,
-      showBookingButton,
       bookingButtonText,
-      bookingLink
+      bookingLink,
+      ${contentProjection}
     }
   `,
 
   // ─────────────────────────────────────────────
   // ИНСТАЛЛЯЦИИ
-  // Используют: MainPage (список), InstallationPage (детали)
-  //
-  // MainPage: installation.imageUrl, title, description, location, year, slug
-  //   → нужен resolved imageUrl
-  //
-  // InstallationPage:
-  //   urlFor(installation.heroImage).width(2000).url()
-  //   → нужен raw heroImage (без fallback)
-  //   + content для inline рендеринга (textBlock, imageBlock, galleryBlock, videoBlock, quoteBlock, processBlock)
-  //   + showBookingButton, bookingButtonText
+  // MainPage: slug, title, description, imageUrl, location, year
+  // InstallationPage: всё + heroImage (raw) + content[] (рендерит inline)
   // ─────────────────────────────────────────────
 
-  // Для MainPage — resolved imageUrl
   allInstallations: `*[_type == "installation"] | order(order asc, year desc){
     _id,
     "slug": slug.current,
@@ -255,7 +248,6 @@ export const queries = {
     featured
   }`,
 
-  // Для InstallationPage — raw heroImage + raw content
   installationBySlug: (slug: string) => `
     *[_type == "installation" && slug.current == "${slug}"][0]{
       _id,
@@ -263,34 +255,25 @@ export const queries = {
       title,
       description,
       heroImage,
+      "imageUrl": heroImage.asset->url,
       heroVideo,
       location,
       year,
       materials,
       dimensions,
-      content,
       showBookingButton,
       bookingButtonText,
-      bookingLink
+      bookingLink,
+      ${contentProjection}
     }
   `,
 
   // ─────────────────────────────────────────────
   // ПРОЕКТЫ
-  // Используют: MainPage (список), ProjectPage (детали)
-  //
-  // MainPage: project.imageUrl, title, type, description, slug
-  //   → нужен resolved imageUrl + "type": projectType
-  //
-  // ProjectPage:
-  //   project.coverImage ? urlFor(project.coverImage).width(1200).url() : project.imageUrl
-  //   → нужны ОБА: raw coverImage + resolved imageUrl
-  //   + content для FlexibleContent
-  //   + gallery[] (resolved URLs)
-  //   + "participants": collaborators
+  // MainPage: slug, title, type, description, imageUrl
+  // ProjectPage: всё + coverImage (raw) + content[] + gallery[]
   // ─────────────────────────────────────────────
 
-  // Для MainPage — resolved imageUrl
   allProjects: `*[_type == "project"] | order(order asc, dateStart desc){
     _id,
     "slug": slug.current,
@@ -304,7 +287,6 @@ export const queries = {
     featured
   }`,
 
-  // Для MainPage — только избранные
   featuredProjects: `*[_type == "project" && featured == true] | order(order asc){
     _id,
     "slug": slug.current,
@@ -315,7 +297,6 @@ export const queries = {
     "startDate": dateStart
   }`,
 
-  // Для ProjectPage — raw coverImage + imageUrl + content + gallery
   projectBySlug: (slug: string) => `
     *[_type == "project" && slug.current == "${slug}"][0]{
       _id,
@@ -330,22 +311,20 @@ export const queries = {
       "startDate": dateStart,
       "endDate": dateEnd,
       "participants": collaborators,
-      "gallery": gallery[].asset->url,
+      "gallery": gallery[]{
+        ...,
+        "url": asset->url
+      },
       showCTA,
       ctaText,
       ctaLink,
-      content
+      ${contentProjection}
     }
   `,
 
   // ─────────────────────────────────────────────
   // МЫСЛИ ХУДОЖНИКА
-  // Используют: ThoughtsPage
-  //
-  // ThoughtsPage: thought.id, side ('artist'|'universe'), text, time, mood
-  //
-  // Schema: sender ('nadia'|'inner') → маппим в 'artist'|'universe'
-  // Schema: emoji → маппим в 'mood'
+  // ThoughtsPage: id, side, text, time, mood
   // ─────────────────────────────────────────────
 
   allThoughts: `*[_type == "thought"] | order(order asc){
