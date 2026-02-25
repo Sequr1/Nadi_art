@@ -2,34 +2,49 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import ContactModal from '../components/ContactModal';
-import {
-  defaultPaintings,
-  defaultWorkshops,
-  defaultInstallations,
-  defaultProjects,
-} from '../types';
+import { sanityClient, queries } from '../lib/sanity';
 
 export default function MainPage() {
   const navigate = useNavigate();
   const [showContactModal, setShowContactModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('paintings');
 
+  // Sanity data
+  const [workshops, setWorkshops] = useState<any[]>([]);
+  const [installations, setInstallations] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [paintingsCount, setPaintingsCount] = useState(0);
+
+  useEffect(() => {
+    Promise.all([
+      sanityClient.fetch(queries.allWorkshops),
+      sanityClient.fetch(queries.allInstallations),
+      sanityClient.fetch(queries.allProjects),
+      sanityClient.fetch(`count(*[_type == "painting"])`),
+    ])
+      .then(([w, i, p, pc]) => {
+        setWorkshops(w || []);
+        setInstallations(i || []);
+        setProjects(p || []);
+        setPaintingsCount(pc || 0);
+      })
+      .catch(console.error);
+  }, []);
+
   // Многоуровневый блок "Обо мне"
   const [expandedFact, setExpandedFact] = useState<number | null>(null);
   const [expandedSubFact, setExpandedSubFact] = useState<number | null>(null);
 
-  // ===== НОВОЕ: GIF popup вместо expandedDeepFact =====
+  // GIF popup
   const [activeGif, setActiveGif] = useState<{ url: string; key: number; emoji: string } | null>(null);
   const gifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Очистка таймера при размонтировании
   useEffect(() => {
     return () => {
       if (gifTimerRef.current) clearTimeout(gifTimerRef.current);
     };
   }, []);
 
-  // Показать GIF на 5 секунд
   const showGif = (gifUrl: string, emoji: string) => {
     if (gifTimerRef.current) clearTimeout(gifTimerRef.current);
     setActiveGif({ url: gifUrl, key: Date.now(), emoji });
@@ -38,26 +53,22 @@ export default function MainPage() {
       gifTimerRef.current = null;
     }, 5000);
   };
-  // ===== КОНЕЦ НОВОГО =====
 
-  // ===== НОВОЕ: ref для плавного скролла к разделу =====
+  // Плавный скролл
   const sectionRef = useRef<HTMLDivElement>(null);
-
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
-    // Даём время на перерисовку, потом скроллим
     setTimeout(() => {
       sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
-  // ===== КОНЕЦ =====
 
   const categories = [
     {
       id: 'paintings',
       title: 'Картины',
       subtitle: 'Картина — это остановленное ощущение',
-      count: defaultPaintings.length,
+      count: paintingsCount,
       gradient: 'from-violet-100 to-lavender-light',
       icon: '🎨',
     },
@@ -65,7 +76,7 @@ export default function MainPage() {
       id: 'workshops',
       title: 'Мастер-классы',
       subtitle: 'Процесс важнее формы',
-      count: defaultWorkshops.length,
+      count: workshops.length,
       gradient: 'from-amber-50 to-orange-100',
       icon: '✨',
     },
@@ -73,7 +84,7 @@ export default function MainPage() {
       id: 'installations',
       title: 'Инсталляции',
       subtitle: 'Пространство, в которое можно войти',
-      count: defaultInstallations.length,
+      count: installations.length,
       gradient: 'from-emerald-50 to-teal-100',
       icon: '🌿',
     },
@@ -81,15 +92,12 @@ export default function MainPage() {
       id: 'projects',
       title: 'Проекты',
       subtitle: 'Иногда идеи выходят за рамки холста',
-      count: defaultProjects.length,
+      count: projects.length,
       gradient: 'from-blue-50 to-indigo-100',
       icon: '🌊',
     },
   ];
 
-  // ===== ИЗМЕНЕНО: Единая структура — 1 кнопка → 1 подпункт → 2 подподпункта =====
-  // У каждого факта есть поле gif — путь к гифке в папке public/gifs/
-  // ===== Каждый deepFact имеет свою уникальную гифку =====
   const aboutFacts = [
     {
       emoji: '🎨',
@@ -172,22 +180,17 @@ export default function MainPage() {
       ],
     },
   ];
-  // ===== КОНЕЦ ИЗМЕНЕНИЙ =====
 
   return (
     <div className="min-h-screen bg-milk">
-      {/* Декоративные элементы — мерцающие точки */}
+      {/* Декоративные элементы */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-lavender-soft/30 rounded-full blur-3xl animate-breathe" />
         <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-violet-smoke/20 rounded-full blur-3xl animate-float" />
-        
-        {/* Мерцающие точки */}
         <div className="absolute top-32 left-[15%] w-2 h-2 bg-lavender/60 rounded-full animate-twinkle" />
         <div className="absolute top-48 right-[20%] w-3 h-3 bg-amethyst/40 rounded-full animate-twinkle" style={{ animationDelay: '0.7s' }} />
         <div className="absolute top-[60%] left-[10%] w-2 h-2 bg-violet-deep/30 rounded-full animate-twinkle" style={{ animationDelay: '1.4s' }} />
         <div className="absolute bottom-[30%] right-[15%] w-2 h-2 bg-lilac/50 rounded-full animate-twinkle" style={{ animationDelay: '2.1s' }} />
-        
-        {/* Плавающие элементы */}
         <div className="absolute top-[40%] right-[8%] animate-float-around" style={{ animationDelay: '0s' }}>
           <div className="w-4 h-4 border border-lavender/30 rounded-full" />
         </div>
@@ -198,30 +201,17 @@ export default function MainPage() {
 
       {/* Навигация */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 md:px-12 py-4 md:py-5 bg-milk/80 backdrop-blur-lg border-b border-lavender-soft/50">
-        <Link 
-          to="/" 
-          className="font-serif text-xl md:text-2xl text-text-primary tracking-wide hover:text-amethyst transition-colors duration-500"
-        >
+        <Link to="/" className="font-serif text-xl md:text-2xl text-text-primary tracking-wide hover:text-amethyst transition-colors duration-500">
           Надя Сок
         </Link>
-        
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Кнопка «Состояния» — фиолетовая, видна ВСЕГДА */}
-          <Link 
-            to="/enter"
-            className="inline-flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-500 bg-gradient-to-r from-lavender to-amethyst text-white shadow-md shadow-amethyst/20 hover:shadow-lg hover:shadow-amethyst/30 hover:-translate-y-0.5 active:scale-[0.97]"
-          >
+          <Link to="/enter" className="inline-flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-500 bg-gradient-to-r from-lavender to-amethyst text-white shadow-md shadow-amethyst/20 hover:shadow-lg hover:shadow-amethyst/30 hover:-translate-y-0.5 active:scale-[0.97]">
             <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
             <span className="hidden sm:inline">Выбрать </span>состояние
           </Link>
-
-          {/* Кнопка «Мысли» — мятная, видна ВСЕГДА */}
-          <Link 
-            to="/thoughts"
-            className="inline-flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-500 bg-gradient-to-r from-mint to-mint-deep text-white shadow-md shadow-mint-deep/20 hover:shadow-lg hover:shadow-mint-deep/30 hover:-translate-y-0.5 active:scale-[0.97]"
-          >
+          <Link to="/thoughts" className="inline-flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-500 bg-gradient-to-r from-mint to-mint-deep text-white shadow-md shadow-mint-deep/20 hover:shadow-lg hover:shadow-mint-deep/30 hover:-translate-y-0.5 active:scale-[0.97]">
             <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -230,15 +220,13 @@ export default function MainPage() {
         </div>
       </nav>
 
-      {/* ===== МЯТНАЯ ПУЛЬСАЦИЯ — вынесена за пределы Hero, чтобы не обрезалась ===== */}
+      {/* Мятная пульсация */}
       <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-mint/50 rounded-full animate-mint-pulse pointer-events-none z-0" />
       <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-mint-soft/55 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '3s' }} />
       <div className="absolute top-[350px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-mint-deep/45 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '5s' }} />
-      {/* ===== КОНЕЦ МЯТНОЙ ПУЛЬСАЦИИ ===== */}
 
-      {/* Hero — Компактный */}
+      {/* Hero */}
       <section className="pt-28 pb-8 px-6 md:px-12 relative">
-
         <div className="max-w-4xl mx-auto text-center opacity-0 animate-fade-in-up">
           <h1 className="font-serif font-light text-4xl md:text-5xl lg:text-6xl text-text-primary mb-4 leading-tight">
             Искусство как
@@ -250,7 +238,7 @@ export default function MainPage() {
           </p>
         </div>
 
-        {/* Категории — с пульсирующими заголовками */}
+        {/* Категории */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           {categories.map((cat) => (
             <button
@@ -262,32 +250,15 @@ export default function MainPage() {
                   : 'bg-white/60 hover:bg-white/80'
               }`}
             >
-              {/* Цветок при наведении */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-100 scale-0">
                 <svg className="w-6 h-6 text-lavender/60 animate-flower-bloom" viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="12" cy="12" r="3" />
-                  <circle cx="12" cy="6" r="2" />
-                  <circle cx="12" cy="18" r="2" />
-                  <circle cx="6" cy="12" r="2" />
-                  <circle cx="18" cy="12" r="2" />
-                  <circle cx="8" cy="8" r="1.5" />
-                  <circle cx="16" cy="8" r="1.5" />
-                  <circle cx="8" cy="16" r="1.5" />
-                  <circle cx="16" cy="16" r="1.5" />
+                  <circle cx="12" cy="12" r="3" /><circle cx="12" cy="6" r="2" /><circle cx="12" cy="18" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="18" cy="12" r="2" />
                 </svg>
               </div>
-
-              {/* Заголовок с пульсацией и сердечками */}
               <div className="relative">
-                <h3 className={`font-serif text-base md:text-lg mb-1 transition-all duration-500 ${
-                  activeSection === cat.id 
-                    ? 'text-amethyst animate-pulse-colors' 
-                    : 'text-text-primary'
-                }`}>
+                <h3 className={`font-serif text-base md:text-lg mb-1 transition-all duration-500 ${activeSection === cat.id ? 'text-amethyst animate-pulse-colors' : 'text-text-primary'}`}>
                   {cat.title}
                 </h3>
-                
-                {/* Сердечки при активном состоянии */}
                 {activeSection === cat.id && (
                   <div className="absolute -top-3 left-0 right-0 flex justify-center gap-2 pointer-events-none">
                     <span className="text-xs animate-hearts-rise" style={{ animationDelay: '0s' }}>💜</span>
@@ -296,13 +267,10 @@ export default function MainPage() {
                   </div>
                 )}
               </div>
-              
               <p className="text-text-muted text-xs flex items-center gap-1">
                 <span className="opacity-70">{cat.icon}</span>
                 {cat.count} {cat.count === 1 ? 'работа' : cat.count < 5 ? 'работы' : 'работ'}
               </p>
-              
-              {/* Shimmer эффект при hover */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                 <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </div>
@@ -311,32 +279,19 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* Декоративный зигзаг разделитель */}
+      {/* Декоративный разделитель */}
       <div className="py-12 opacity-0 animate-fade-in">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-center">
           <svg viewBox="0 0 800 60" className="w-full h-12 md:h-16" preserveAspectRatio="none">
             <defs>
               <linearGradient id="zigzag-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset="20%" stopColor="#C4B5D9" />
-                <stop offset="50%" stopColor="#9B7BC7" />
-                <stop offset="80%" stopColor="#C4B5D9" />
-                <stop offset="100%" stopColor="transparent" />
+                <stop offset="0%" stopColor="transparent" /><stop offset="20%" stopColor="#C4B5D9" /><stop offset="50%" stopColor="#9B7BC7" /><stop offset="80%" stopColor="#C4B5D9" /><stop offset="100%" stopColor="transparent" />
               </linearGradient>
             </defs>
-            <path 
-              d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 T500,30 T600,30 T700,30 T800,30" 
-              stroke="url(#zigzag-gradient)" 
-              strokeWidth="1.5" 
-              fill="none"
-              className="animate-pulse-soft"
-            />
-            {/* Танцующие точки */}
+            <path d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 T500,30 T600,30 T700,30 T800,30" stroke="url(#zigzag-gradient)" strokeWidth="1.5" fill="none" className="animate-pulse-soft" />
             <circle cx="400" cy="30" r="4" fill="#9B7BC7" className="animate-glow-pulse" />
             <circle cx="200" cy="30" r="2" fill="#C4B5D9" className="animate-dots-dance" />
             <circle cx="600" cy="30" r="2" fill="#C4B5D9" className="animate-dots-dance" style={{ animationDelay: '0.5s' }} />
-            <circle cx="100" cy="30" r="1.5" fill="#DDD6FE" className="animate-twinkle" />
-            <circle cx="700" cy="30" r="1.5" fill="#DDD6FE" className="animate-twinkle" style={{ animationDelay: '1s' }} />
           </svg>
         </div>
       </div>
@@ -344,7 +299,6 @@ export default function MainPage() {
       {/* Развернутый раздел */}
       <section ref={sectionRef} className="px-6 md:px-12 pb-20 bg-white/30 animate-fade-in scroll-mt-24">
         <div className="max-w-7xl mx-auto">
-          {/* Заголовок раздела */}
           <div className="text-center mb-12">
             <h2 className="font-serif font-light text-2xl md:text-3xl text-text-primary mb-3">
               {categories.find(c => c.id === activeSection)?.title}
@@ -354,28 +308,16 @@ export default function MainPage() {
             </p>
           </div>
 
-          {/* Контент раздела */}
           {activeSection === 'paintings' && <Gallery showFilters />}
           
           {activeSection === 'workshops' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {defaultWorkshops.map((workshop) => (
+              {workshops.map((workshop: any) => (
                 <div
                   key={workshop._id}
                   className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
                   onClick={() => navigate(`/workshop/${workshop.slug}`)}
                 >
-                  {/* Цветок при наведении */}
-                  <div className="absolute -top-8 -right-8 w-24 h-24 opacity-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:rotate-12">
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-amber-200/50">
-                      <circle cx="50" cy="50" r="15" fill="currentColor" />
-                      <ellipse cx="50" cy="25" rx="10" ry="20" fill="currentColor" className="animate-wiggle" />
-                      <ellipse cx="50" cy="75" rx="10" ry="20" fill="currentColor" className="animate-wiggle" />
-                      <ellipse cx="25" cy="50" rx="20" ry="10" fill="currentColor" className="animate-wiggle" />
-                      <ellipse cx="75" cy="50" rx="20" ry="10" fill="currentColor" className="animate-wiggle" />
-                    </svg>
-                  </div>
-
                   <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
                     <img
                       src={workshop.imageUrl}
@@ -383,117 +325,89 @@ export default function MainPage() {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">
-                    {workshop.title}
-                  </h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">
-                    {workshop.description}
-                  </p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{workshop.title}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{workshop.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 text-text-muted text-xs">
                       <span>{workshop.duration}</span>
                       {workshop.price && <span>{workshop.price}</span>}
                     </div>
-                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      Подробнее →
-                    </span>
+                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
                   </div>
                 </div>
               ))}
+              {workshops.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-text-muted font-light">Мастер-классы скоро появятся</p>
+                </div>
+              )}
             </div>
           )}
           
           {activeSection === 'installations' && (
             <div className="grid md:grid-cols-2 gap-6">
-              {defaultInstallations.map((installation) => (
+              {installations.map((installation: any) => (
                 <div
                   key={installation._id}
                   className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
                   onClick={() => navigate(`/installation/${installation.slug}`)}
                 >
                   <div className="aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                    <img
-                      src={installation.imageUrl}
-                      alt={installation.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
+                    <img src={installation.imageUrl} alt={installation.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </div>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">
-                    {installation.title}
-                  </h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">
-                    {installation.description}
-                  </p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{installation.title}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{installation.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 text-text-muted text-xs">
                       {installation.location && <span>{installation.location}</span>}
                       {installation.year && <span>{installation.year}</span>}
                     </div>
-                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      Подробнее →
-                    </span>
+                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
                   </div>
                 </div>
               ))}
+              {installations.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-text-muted font-light">Инсталляции скоро появятся</p>
+                </div>
+              )}
             </div>
           )}
           
           {activeSection === 'projects' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {defaultProjects.map((project) => (
-                <div
-                  key={project._id}
-                  className="group card-soft p-5 hover:bg-white cursor-pointer"
-                  onClick={() => navigate(`/project/${project.slug}`)}
-                >
+              {projects.map((project: any) => (
+                <div key={project._id} className="group card-soft p-5 hover:bg-white cursor-pointer" onClick={() => navigate(`/project/${project.slug}`)}>
                   <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
+                    <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </div>
                   <span className="text-xs text-lavender uppercase tracking-wider">
-                    {project.type === 'exhibition' ? 'Выставка' : 
-                     project.type === 'collaboration' ? 'Коллаборация' : 'Перформанс'}
+                    {project.type === 'exhibition' ? 'Выставка' : project.type === 'collaboration' ? 'Коллаборация' : 'Перформанс'}
                   </span>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 mt-2 group-hover:text-amethyst transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">
-                    {project.description}
-                  </p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 mt-2 group-hover:text-amethyst transition-colors">{project.title}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{project.description}</p>
                   <div className="flex justify-end">
-                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      Подробнее →
-                    </span>
+                    <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
                   </div>
                 </div>
               ))}
+              {projects.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-text-muted font-light">Проекты скоро появятся</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </section>
 
-      {/* Видео блок на весь экран */}
+      {/* Видео блок */}
       <section className="relative w-full h-screen overflow-hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          poster="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=80"
-        >
-          <source 
-            src="https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-painting-with-watercolors-on-paper-23187-large.mp4" 
-            type="video/mp4" 
-          />
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" poster="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=80">
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-painting-with-watercolors-on-paper-23187-large.mp4" type="video/mp4" />
         </video>
-        
         <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
         <div className="absolute inset-0 bg-milk/20" />
-        
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="font-serif text-2xl md:text-4xl lg:text-5xl text-text-primary/80 text-center px-6 max-w-3xl leading-relaxed">
             Процесс создания — <br className="hidden sm:block" />
@@ -502,37 +416,14 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* ===== Блок "Обо мне" — ИЗМЕНЁННЫЙ ===== */}
+      {/* Блок "Обо мне" */}
       <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk via-mint-light/20 to-lavender-soft/20 relative overflow-hidden">
-        {/* Декоративные круги — фиолетовые + мятные */}
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-violet-smoke/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-lavender-soft/20 rounded-full blur-3xl" />
-        {/* Мятное свечение — переходный свет */}
         <div className="absolute top-1/4 right-[10%] w-[400px] h-[400px] bg-mint/10 rounded-full blur-3xl animate-breathe" />
         <div className="absolute bottom-1/3 left-[5%] w-[350px] h-[350px] bg-mint-soft/15 rounded-full blur-3xl animate-float" />
         
-        {/* Плавающие цветочки */}
-        <div className="absolute top-20 right-20 animate-float-around opacity-30">
-          <svg className="w-12 h-12 text-lavender" viewBox="0 0 50 50" fill="currentColor">
-            <circle cx="25" cy="25" r="8" />
-            <circle cx="25" cy="10" r="5" />
-            <circle cx="25" cy="40" r="5" />
-            <circle cx="10" cy="25" r="5" />
-            <circle cx="40" cy="25" r="5" />
-          </svg>
-        </div>
-        <div className="absolute bottom-32 left-16 animate-float-around opacity-20" style={{ animationDelay: '3s' }}>
-          <svg className="w-8 h-8 text-amethyst" viewBox="0 0 50 50" fill="currentColor">
-            <circle cx="25" cy="25" r="6" />
-            <circle cx="25" cy="12" r="4" />
-            <circle cx="25" cy="38" r="4" />
-            <circle cx="12" cy="25" r="4" />
-            <circle cx="38" cy="25" r="4" />
-          </svg>
-        </div>
-        
         <div className="max-w-4xl mx-auto relative z-10">
-          {/* Заголовок */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 mb-6">
               <div className="w-12 h-px bg-gradient-to-r from-transparent to-lavender" />
@@ -545,146 +436,57 @@ export default function MainPage() {
             </h2>
           </div>
 
-          {/* МНОГОУРОВНЕВЫЕ интерактивные карточки */}
           <div className="space-y-4">
             {aboutFacts.map((fact, index) => (
-              <div
-                key={index}
-                className={`rounded-3xl transition-all duration-700 ease-out overflow-hidden ${
-                  expandedFact === index 
-                    ? 'bg-white shadow-xl shadow-lavender/20' 
-                    : 'bg-white/60 hover:bg-white hover:shadow-lg hover:shadow-lavender/10'
-                }`}
-              >
-                {/* Уровень 1 — Основной факт */}
-                <div 
-                  onClick={() => {
-                    setExpandedFact(expandedFact === index ? null : index);
-                    setExpandedSubFact(null);
-                  }}
-                  className="p-6 cursor-pointer"
-                >
+              <div key={index} className={`rounded-3xl transition-all duration-700 ease-out overflow-hidden ${expandedFact === index ? 'bg-white shadow-xl shadow-lavender/20' : 'bg-white/60 hover:bg-white hover:shadow-lg hover:shadow-lavender/10'}`}>
+                <div onClick={() => { setExpandedFact(expandedFact === index ? null : index); setExpandedSubFact(null); }} className="p-6 cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className={`text-3xl transition-all duration-500 ${
-                      expandedFact === index ? 'scale-125 animate-bounce-soft' : 'group-hover:scale-110'
-                    }`}>
-                      {fact.emoji}
-                    </div>
-                    <h3 className={`font-serif text-xl transition-colors duration-500 flex-1 ${
-                      expandedFact === index ? 'text-amethyst' : 'text-text-primary'
-                    }`}>
-                      {fact.title}
-                    </h3>
-                    
-                    {/* Цветок вырастает при открытии */}
+                    <div className={`text-3xl transition-all duration-500 ${expandedFact === index ? 'scale-125 animate-bounce-soft' : ''}`}>{fact.emoji}</div>
+                    <h3 className={`font-serif text-xl transition-colors duration-500 flex-1 ${expandedFact === index ? 'text-amethyst' : 'text-text-primary'}`}>{fact.title}</h3>
                     {expandedFact === index && (
                       <div className="animate-flower-bloom">
                         <svg className="w-6 h-6 text-lavender" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="12" r="3" />
-                          <circle cx="12" cy="6" r="2" />
-                          <circle cx="12" cy="18" r="2" />
-                          <circle cx="6" cy="12" r="2" />
-                          <circle cx="18" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="3" /><circle cx="12" cy="6" r="2" /><circle cx="12" cy="18" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="18" cy="12" r="2" />
                         </svg>
                       </div>
                     )}
-                    
-                    <svg 
-                      className={`w-5 h-5 text-lavender transition-transform duration-500 ${
-                        expandedFact === index ? 'rotate-180' : ''
-                      }`} 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
+                    <svg className={`w-5 h-5 text-lavender transition-transform duration-500 ${expandedFact === index ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
-                  
-                  <p className={`text-text-secondary font-light mt-2 transition-all duration-500 ${
-                    expandedFact === index ? 'opacity-100' : 'opacity-70'
-                  }`}>
-                    {fact.content}
-                  </p>
+                  <p className={`text-text-secondary font-light mt-2 transition-all duration-500 ${expandedFact === index ? 'opacity-100' : 'opacity-70'}`}>{fact.content}</p>
                 </div>
 
-                {/* Уровень 2 — Подфакты (ровно 1 подпункт) */}
                 {expandedFact === index && fact.subFacts && (
                   <div className="px-6 pb-6 space-y-3 animate-unfold">
                     <div className="h-px bg-gradient-to-r from-transparent via-lavender-soft to-transparent mb-4" />
-                    
                     {fact.subFacts.map((subFact, subIndex) => (
-                      <div 
-                        key={subIndex}
-                        className={`ml-8 rounded-2xl transition-all duration-500 overflow-hidden ${
-                          expandedSubFact === subIndex 
-                            ? 'bg-lavender-soft/50' 
-                            : 'bg-lavender-soft/20 hover:bg-lavender-soft/30'
-                        }`}
-                      >
-                        <div 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedSubFact(expandedSubFact === subIndex ? null : subIndex);
-                          }}
-                          className="p-4 cursor-pointer"
-                        >
+                      <div key={subIndex} className={`ml-8 rounded-2xl transition-all duration-500 overflow-hidden ${expandedSubFact === subIndex ? 'bg-lavender-soft/50' : 'bg-lavender-soft/20 hover:bg-lavender-soft/30'}`}>
+                        <div onClick={(e) => { e.stopPropagation(); setExpandedSubFact(expandedSubFact === subIndex ? null : subIndex); }} className="p-4 cursor-pointer">
                           <div className="flex items-center gap-3">
-                            <span className={`text-xl transition-transform duration-300 ${
-                              expandedSubFact === subIndex ? 'scale-125' : ''
-                            }`}>{subFact.icon}</span>
-                            <span className={`font-medium transition-colors ${
-                              expandedSubFact === subIndex ? 'text-amethyst' : 'text-text-primary'
-                            }`}>{subFact.title}</span>
-                            
+                            <span className={`text-xl transition-transform duration-300 ${expandedSubFact === subIndex ? 'scale-125' : ''}`}>{subFact.icon}</span>
+                            <span className={`font-medium transition-colors ${expandedSubFact === subIndex ? 'text-amethyst' : 'text-text-primary'}`}>{subFact.title}</span>
                             {subFact.deepFacts && (
-                              <svg 
-                                className={`w-4 h-4 text-lavender ml-auto transition-transform duration-500 ${
-                                  expandedSubFact === subIndex ? 'rotate-180' : ''
-                                }`} 
-                                fill="none" 
-                                viewBox="0 0 24 24" 
-                                stroke="currentColor"
-                              >
+                              <svg className={`w-4 h-4 text-lavender ml-auto transition-transform duration-500 ${expandedSubFact === subIndex ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                               </svg>
                             )}
                           </div>
-                          <p className="text-text-secondary text-sm font-light mt-1">
-                            {subFact.content}
-                          </p>
+                          <p className="text-text-secondary text-sm font-light mt-1">{subFact.content}</p>
                         </div>
-
-                        {/* ===== Уровень 3 — ИЗМЕНЕНО: клик вызывает GIF ===== */}
                         {expandedSubFact === subIndex && subFact.deepFacts && (
                           <div className="px-4 pb-4 space-y-2 animate-reveal-right">
                             {subFact.deepFacts.map((deepFact, deepIndex) => (
-                              <div 
-                                key={deepIndex}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Вызываем GIF попап — у каждого подподпункта своя гифка!
-                                  showGif(deepFact.gif, fact.emoji);
-                                }}
-                                className="ml-6 p-3 rounded-xl transition-all duration-300 cursor-pointer bg-white/50 hover:bg-white hover:shadow-md active:scale-[0.97] group/deep"
-                              >
+                              <div key={deepIndex} onClick={(e) => { e.stopPropagation(); showGif(deepFact.gif, fact.emoji); }} className="ml-6 p-3 rounded-xl transition-all duration-300 cursor-pointer bg-white/50 hover:bg-white hover:shadow-md active:scale-[0.97] group/deep">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-base group-hover/deep:scale-125 transition-transform duration-300">
-                                    {deepFact.icon}
-                                  </span>
-                                  <span className="text-text-secondary text-sm group-hover/deep:text-amethyst transition-colors">
-                                    {deepFact.text}
-                                  </span>
-                                  {/* Подсказка "нажми" */}
-                                  <span className="ml-auto text-xs text-lavender/60 opacity-0 group-hover/deep:opacity-100 transition-opacity whitespace-nowrap">
-                                    нажми 🎬
-                                  </span>
+                                  <span className="text-base group-hover/deep:scale-125 transition-transform duration-300">{deepFact.icon}</span>
+                                  <span className="text-text-secondary text-sm group-hover/deep:text-amethyst transition-colors">{deepFact.text}</span>
+                                  <span className="ml-auto text-xs text-lavender/60 opacity-0 group-hover/deep:opacity-100 transition-opacity whitespace-nowrap">нажми 🎬</span>
                                 </div>
                               </div>
                             ))}
                           </div>
                         )}
-                        {/* ===== КОНЕЦ ИЗМЕНЕНИЙ Уровень 3 ===== */}
                       </div>
                     ))}
                   </div>
@@ -693,121 +495,44 @@ export default function MainPage() {
             ))}
           </div>
 
-          {/* Цитата */}
           <div className="mt-16 text-center">
             <div className="inline-block bg-white/80 backdrop-blur-sm rounded-3xl px-8 py-6 shadow-lg shadow-lavender/10 relative overflow-hidden group">
-              {/* Shimmer эффект */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
                 <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               </div>
-              
-              <blockquote className="font-serif text-xl md:text-2xl text-text-primary italic relative z-10">
-                «Мне нравится удивляться тому, что появляется»
-              </blockquote>
+              <blockquote className="font-serif text-xl md:text-2xl text-text-primary italic relative z-10">«Мне нравится удивляться тому, что появляется»</blockquote>
               <div className="mt-4 flex items-center justify-center gap-2 relative z-10">
-                <div className="w-8 h-px bg-lavender" />
-                <span className="text-lavender text-sm">Надя</span>
-                <div className="w-8 h-px bg-lavender" />
+                <div className="w-8 h-px bg-lavender" /><span className="text-lavender text-sm">Надя</span><div className="w-8 h-px bg-lavender" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Финальный блок — Контакты с воздухом */}
+      {/* Финальный блок */}
       <section className="py-40 md:py-52 lg:py-64 px-6 md:px-12 bg-gradient-to-b from-lavender-soft/20 via-lavender-light/30 to-lavender-soft/40 relative overflow-hidden">
-        
-        {/* Декоративный цветочный узор - левый */}
-        <div className="absolute left-8 md:left-16 lg:left-32 top-1/2 -translate-y-1/2 opacity-15">
-          <svg viewBox="0 0 120 280" className="w-20 md:w-28 lg:w-36 h-auto text-amethyst">
-            <g fill="currentColor">
-              <circle cx="60" cy="40" r="12" opacity="0.6" className="animate-pulse-soft" />
-              <ellipse cx="40" cy="40" rx="14" ry="7" transform="rotate(-30 40 40)" opacity="0.4" />
-              <ellipse cx="80" cy="40" rx="14" ry="7" transform="rotate(30 80 40)" opacity="0.4" />
-              <ellipse cx="60" cy="22" rx="7" ry="14" opacity="0.4" />
-              <ellipse cx="60" cy="58" rx="7" ry="14" opacity="0.4" />
-              <path d="M60,70 Q52,110 60,140 Q68,170 60,200" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.3" />
-              <ellipse cx="42" cy="115" rx="16" ry="8" transform="rotate(-25 42 115)" opacity="0.25" />
-              <ellipse cx="78" cy="155" rx="16" ry="8" transform="rotate(25 78 155)" opacity="0.25" />
-              <circle cx="60" cy="230" r="10" opacity="0.5" className="animate-breathe" />
-              <ellipse cx="46" cy="230" rx="12" ry="6" transform="rotate(-30 46 230)" opacity="0.35" />
-              <ellipse cx="74" cy="230" rx="12" ry="6" transform="rotate(30 74 230)" opacity="0.35" />
-              <circle cx="35" cy="85" r="4" opacity="0.3" />
-              <circle cx="85" cy="180" r="4" opacity="0.3" />
-            </g>
-          </svg>
-        </div>
-
-        {/* Декоративный цветочный узор - правый */}
-        <div className="absolute right-8 md:right-16 lg:right-32 top-1/2 -translate-y-1/2 opacity-15">
-          <svg viewBox="0 0 120 280" className="w-20 md:w-28 lg:w-36 h-auto text-lavender transform scale-x-[-1]">
-            <g fill="currentColor">
-              <circle cx="60" cy="40" r="12" opacity="0.6" className="animate-breathe" />
-              <ellipse cx="40" cy="40" rx="14" ry="7" transform="rotate(-30 40 40)" opacity="0.4" />
-              <ellipse cx="80" cy="40" rx="14" ry="7" transform="rotate(30 80 40)" opacity="0.4" />
-              <ellipse cx="60" cy="22" rx="7" ry="14" opacity="0.4" />
-              <ellipse cx="60" cy="58" rx="7" ry="14" opacity="0.4" />
-              <path d="M60,70 Q52,110 60,140 Q68,170 60,200" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.3" />
-              <ellipse cx="42" cy="115" rx="16" ry="8" transform="rotate(-25 42 115)" opacity="0.25" />
-              <ellipse cx="78" cy="155" rx="16" ry="8" transform="rotate(25 78 155)" opacity="0.25" />
-              <circle cx="60" cy="230" r="10" opacity="0.5" className="animate-pulse-soft" />
-              <ellipse cx="46" cy="230" rx="12" ry="6" transform="rotate(-30 46 230)" opacity="0.35" />
-              <ellipse cx="74" cy="230" rx="12" ry="6" transform="rotate(30 74 230)" opacity="0.35" />
-              <circle cx="35" cy="85" r="4" opacity="0.3" />
-              <circle cx="85" cy="180" r="4" opacity="0.3" />
-            </g>
-          </svg>
-        </div>
-
-        {/* Анимированная точка — сверху */}
         <div className="absolute top-24 left-1/2 -translate-x-1/2">
           <div className="w-3 h-3 bg-amethyst rounded-full animate-glow-pulse" />
           <div className="w-px h-20 bg-gradient-to-b from-amethyst/50 to-transparent mx-auto mt-3" />
         </div>
-        
         <div className="max-w-2xl mx-auto text-center relative z-10">
           <h2 className="font-serif font-light text-3xl md:text-4xl lg:text-5xl text-text-primary mb-16 opacity-0 animate-fade-in-up leading-relaxed">
-            Иногда всё начинается
-            <span className="block mt-3">с простого «а вдруг?»</span>
+            Иногда всё начинается<span className="block mt-3">с простого «а вдруг?»</span>
           </h2>
-          
           <div className="space-y-8 mb-20 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <p className="text-xl md:text-2xl text-text-secondary font-light leading-relaxed">
-              Я люблю пробовать новое.
-            </p>
-            <p className="text-xl md:text-2xl text-text-secondary font-light leading-relaxed">
-              Если тебе хочется исследовать что-то вместе —
-              <br className="hidden sm:block" />можно написать.
-            </p>
-            <p className="text-lg text-text-muted font-light italic mt-12">
-              Посмотрим, куда это приведёт.
-            </p>
+            <p className="text-xl md:text-2xl text-text-secondary font-light leading-relaxed">Я люблю пробовать новое.</p>
+            <p className="text-xl md:text-2xl text-text-secondary font-light leading-relaxed">Если тебе хочется исследовать что-то вместе —<br className="hidden sm:block" />можно написать.</p>
+            <p className="text-lg text-text-muted font-light italic mt-12">Посмотрим, куда это приведёт.</p>
           </div>
-
           <div className="flex flex-col sm:flex-row gap-5 justify-center opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="group btn-primary text-base px-10 py-4 relative overflow-hidden"
-            >
+            <button onClick={() => setShowContactModal(true)} className="group btn-primary text-base px-10 py-4 relative overflow-hidden">
               <span className="relative z-10">Написать</span>
-              {/* Сердечки */}
-              <div className="absolute -top-4 left-1/4 opacity-0 group-hover:opacity-100">
-                <span className="text-sm animate-hearts-rise">💜</span>
-              </div>
-              <div className="absolute -top-4 right-1/4 opacity-0 group-hover:opacity-100">
-                <span className="text-sm animate-hearts-rise" style={{ animationDelay: '0.2s' }}>💜</span>
-              </div>
+              <div className="absolute -top-4 left-1/4 opacity-0 group-hover:opacity-100"><span className="text-sm animate-hearts-rise">💜</span></div>
+              <div className="absolute -top-4 right-1/4 opacity-0 group-hover:opacity-100"><span className="text-sm animate-hearts-rise" style={{ animationDelay: '0.2s' }}>💜</span></div>
             </button>
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="btn-secondary text-base px-10 py-4"
-            >
-              Предложить идею
-            </button>
+            <button onClick={() => setShowContactModal(true)} className="btn-secondary text-base px-10 py-4">Предложить идею</button>
           </div>
         </div>
-
-        {/* Нижняя декорация */}
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-5">
           <div className="w-12 h-px bg-gradient-to-r from-transparent to-lavender" />
           <div className="w-2 h-2 bg-lavender rounded-full animate-dots-dance" />
@@ -817,53 +542,25 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* Модальное окно контактов */}
-      {showContactModal && (
-        <ContactModal onClose={() => setShowContactModal(false)} />
-      )}
+      {showContactModal && <ContactModal onClose={() => setShowContactModal(false)} />}
 
-      {/* ===== GIF Popup — вылетает по центру экрана на 5 секунд ===== */}
+      {/* GIF Popup */}
       {activeGif && (
-        <div 
-          key={activeGif.key}
-          className="fixed inset-0 z-[150] pointer-events-none"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          {/* Лёгкий полупрозрачный фон */}
+        <div key={activeGif.key} className="fixed inset-0 z-[150] pointer-events-none" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="absolute inset-0 bg-text-primary/10 backdrop-blur-[3px]" style={{ animation: 'fade-in 0.3s ease-out' }} />
-          
-          {/* Контейнер — строго по центру, с анимацией вылета */}
-          <div 
-            className="relative z-10"
-            style={{ animation: 'gif-fly 5s ease-in-out forwards' }}
-          >
-            {/* Свечение позади */}
+          <div className="relative z-10" style={{ animation: 'gif-fly 5s ease-in-out forwards' }}>
             <div className="absolute -inset-8 bg-amethyst/20 rounded-[2.5rem] blur-3xl animate-breathe" />
-            
-            {/* Карточка с GIF */}
             <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden shadow-2xl shadow-amethyst/40 border-2 border-white/70">
-              {/* Фоновый градиент + эмодзи (пока GIF грузится) */}
               <div className="absolute inset-0 bg-gradient-to-br from-lavender-soft via-lavender to-amethyst/50 flex items-center justify-center">
                 <span className="text-7xl animate-bounce-soft drop-shadow-lg">{activeGif.emoji}</span>
               </div>
-              
-              {/* GIF картинка поверх */}
-              <img 
-                src={activeGif.url} 
-                alt="" 
-                className="absolute inset-0 w-full h-full object-cover z-10"
-              />
+              <img src={activeGif.url} alt="" className="absolute inset-0 w-full h-full object-cover z-10" />
             </div>
-            
-            {/* Искорки вокруг */}
             <div className="absolute -top-5 -right-5 text-2xl animate-twinkle">✨</div>
             <div className="absolute -bottom-4 -left-5 text-xl animate-twinkle" style={{ animationDelay: '0.4s' }}>💫</div>
-            <div className="absolute top-1/2 -right-6 text-lg animate-twinkle" style={{ animationDelay: '0.8s' }}>⭐</div>
-            <div className="absolute -top-4 left-1/3 text-sm animate-twinkle" style={{ animationDelay: '1.2s' }}>🌟</div>
           </div>
         </div>
       )}
-      {/* ===== КОНЕЦ GIF Popup ===== */}
     </div>
   );
 }
