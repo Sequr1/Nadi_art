@@ -1,20 +1,16 @@
 // Sanity Studio: schemas/index.ts
-// Добавьте эти схемы в ваш Sanity Studio проект
+// State и MainSettings убраны — они захардкожены на фронте
 
-import state from './state';
 import painting from './painting';
-import mainSettings from './mainSettings';
 import workshop from './workshop';
 import installation from './installation';
 import project from './project';
+import thought from './thought';
 
 export const schemaTypes = [
-  // Singleton
-  mainSettings,
-  // Documents
-  state,
   painting,
   workshop,
   installation,
   project,
+  thought,
 ];
