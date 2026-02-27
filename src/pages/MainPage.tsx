@@ -405,19 +405,29 @@ export default function MainPage() {
       </section>
 
       {/* Видео блок */}
-      <section className="relative w-full h-screen overflow-hidden">
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" poster="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=80">
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-painting-with-watercolors-on-paper-23187-large.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
-        <div className="absolute inset-0 bg-milk/20" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="font-serif text-2xl md:text-4xl lg:text-5xl text-text-primary/80 text-center px-6 max-w-3xl leading-relaxed">
-            Процесс создания — <br className="hidden sm:block" />
-            <span className="text-amethyst">это тоже искусство</span>
-          </p>
-        </div>
-      </section>
+<section className="relative w-full h-screen overflow-hidden">
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover"
+    poster="/video-poster.jpg"  // можно удалить или заменить, если не нужен
+  >
+    <source src="/super.mp4" type="video/mp4" />
+    Ваш браузер не поддерживает видео.
+  </video>
+
+  <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
+  <div className="absolute inset-0 bg-milk/20" />
+
+  <div className="absolute inset-0 flex items-center justify-center">
+    <p className="font-serif text-2xl md:text-4xl lg:text-5xl text-text-primary/80 text-center px-6 max-w-3xl leading-relaxed">
+      Процесс создания — <br className="hidden sm:block" />
+      <span className="text-amethyst">это тоже искусство</span>
+    </p>
+  </div>
+</section>
 
       {/* Блок "Обо мне" */}
       <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk via-mint-light/20 to-lavender-soft/20 relative overflow-hidden">
