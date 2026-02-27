@@ -182,25 +182,19 @@ export default function MainPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-milk">
-      {/* Декоративные элементы */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="min-h-screen bg-milk overflow-x-hidden relative">
+      {/* Декоративные элементы — absolute вместо fixed для мобилки */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ position: 'absolute' }}>
         <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-lavender-soft/30 rounded-full blur-3xl animate-breathe" />
         <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-violet-smoke/20 rounded-full blur-3xl animate-float" />
         <div className="absolute top-32 left-[15%] w-2 h-2 bg-lavender/60 rounded-full animate-twinkle" />
         <div className="absolute top-48 right-[20%] w-3 h-3 bg-amethyst/40 rounded-full animate-twinkle" style={{ animationDelay: '0.7s' }} />
         <div className="absolute top-[60%] left-[10%] w-2 h-2 bg-violet-deep/30 rounded-full animate-twinkle" style={{ animationDelay: '1.4s' }} />
         <div className="absolute bottom-[30%] right-[15%] w-2 h-2 bg-lilac/50 rounded-full animate-twinkle" style={{ animationDelay: '2.1s' }} />
-        <div className="absolute top-[40%] right-[8%] animate-float-around" style={{ animationDelay: '0s' }}>
-          <div className="w-4 h-4 border border-lavender/30 rounded-full" />
-        </div>
-        <div className="absolute top-[70%] left-[5%] animate-float-around" style={{ animationDelay: '2s' }}>
-          <div className="w-3 h-3 bg-lavender-soft/40 rounded-full" />
-        </div>
       </div>
 
-      {/* Навигация */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 md:px-12 py-4 md:py-5 bg-milk/80 backdrop-blur-lg border-b border-lavender-soft/50">
+      {/* Навигация — sticky чтобы не двигалась при свайпе */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 md:px-12 py-4 md:py-5 bg-milk/80 backdrop-blur-lg border-b border-lavender-soft/50" style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
         <Link to="/" className="font-serif text-xl md:text-2xl text-text-primary tracking-wide hover:text-amethyst transition-colors duration-500">
           Надя Сок
         </Link>
@@ -220,10 +214,19 @@ export default function MainPage() {
         </div>
       </nav>
 
-      {/* Мятная пульсация */}
-      <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-mint/50 rounded-full animate-mint-pulse pointer-events-none z-0" />
-      <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-mint-soft/55 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '3s' }} />
-      <div className="absolute top-[350px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-mint-deep/45 rounded-full animate-mint-pulse pointer-events-none z-0" style={{ animationDelay: '5s' }} />
+      {/* Мятная пульсация — без delay, разные скорости для десинхронизации */}
+      <div 
+        className="absolute top-20 left-1/3 w-[300px] md:w-[450px] h-[300px] md:h-[450px] rounded-full pointer-events-none z-0" 
+        style={{ background: 'rgba(168, 230, 207, 0.4)', filter: 'blur(60px)', animation: 'mint-pulse 8s ease-in-out infinite' }} 
+      />
+      <div 
+        className="absolute top-40 right-1/4 w-[250px] md:w-[350px] h-[250px] md:h-[350px] rounded-full pointer-events-none z-0" 
+        style={{ background: 'rgba(200, 240, 222, 0.45)', filter: 'blur(55px)', animation: 'mint-pulse 11s ease-in-out infinite' }} 
+      />
+      <div 
+        className="absolute top-[300px] left-1/2 -translate-x-1/2 w-[350px] md:w-[500px] h-[250px] md:h-[350px] rounded-full pointer-events-none z-0" 
+        style={{ background: 'rgba(124, 203, 162, 0.35)', filter: 'blur(65px)', animation: 'mint-pulse 14s ease-in-out infinite' }} 
+      />
 
       {/* Hero */}
       <section className="pt-28 pb-8 px-6 md:px-12 relative">
