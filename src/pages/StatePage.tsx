@@ -295,7 +295,6 @@ export default function StatePage() {
       className="w-full h-full object-cover"
     />
   </div>
-</div>
               {/* Декоративные точки */}
               <div className={`absolute -top-3 -right-3 w-6 h-6 ${data.dotColor}/40 rounded-full animate-breathe`} />
               <div className={`absolute -bottom-3 -left-3 w-4 h-4 ${data.dotColor}/30 rounded-full animate-breathe`} style={{ animationDelay: '1s' }} />
