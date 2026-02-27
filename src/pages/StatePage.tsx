@@ -287,14 +287,15 @@ export default function StatePage() {
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
             {/* Фото художницы */}
-            <div className="relative opacity-0 animate-fade-in-up">
-              <div className="aspect-[3/4] rounded-3xl overflow-hidden bg-lavender-soft shadow-xl shadow-text-primary/10">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80"
-                  alt="Художница Надя Сок"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+<div className="relative opacity-0 animate-fade-in-up">
+  <div className="aspect-[3/4] rounded-3xl overflow-hidden bg-lavender-soft shadow-xl shadow-text-primary/10">
+    <img
+      src="/nadi.png"
+      alt="Художница Надя Сок"
+      className="w-full h-full object-cover"
+    />
+  </div>
+</div>
               {/* Декоративные точки */}
               <div className={`absolute -top-3 -right-3 w-6 h-6 ${data.dotColor}/40 rounded-full animate-breathe`} />
               <div className={`absolute -bottom-3 -left-3 w-4 h-4 ${data.dotColor}/30 rounded-full animate-breathe`} style={{ animationDelay: '1s' }} />
