@@ -3,13 +3,18 @@ import imageUrlBuilder from "@sanity/image-url";
 
 // ═══════════════════════════════════════════════════════════
 // Конфигурация Sanity
+//
+// ⚠️ CORS: https://www.sanity.io/manage
+//    → Проект wombesw7 → API → CORS Origins
+//    → Добавь: https://твой-сайт.vercel.app
+//    → И: http://localhost:5173
 // ═══════════════════════════════════════════════════════════
 
 export const sanityConfig = {
   projectId: "wombesw7",
   dataset: "production",
   apiVersion: "2024-01-01",
-  useCdn: false,
+  useCdn: true,
 };
 
 export const sanityClient = createClient(sanityConfig);
@@ -17,44 +22,56 @@ export const sanityClient = createClient(sanityConfig);
 const builder = imageUrlBuilder(sanityClient);
 
 export function urlFor(source: any) {
+  if (!source) return { url: () => '', width: () => ({ url: () => '', height: () => ({ url: () => '' }) }) };
   return builder.image(source);
 }
 
 // ═══════════════════════════════════════════════════════════
-// Общая проекция для гибкого контента (content[])
-//
-// Все schemas (painting, workshop, installation, project)
-// используют одинаковые блоки: textBlock, imageBlock,
-// videoBlock, galleryBlock, quoteBlock
-// + installation добавляет processBlock
-//
-// `...` — spread, чтобы ВСЕ поля пришли
-// Плюс разворачиваем вложенные image asset-ы в URL
+// Проекции для гибкого контента
 // ═══════════════════════════════════════════════════════════
 
+// Для Workshop / Installation / Painting (обёрнутые блоки: textBlock, imageBlock и т.д.)
 const contentProjection = `
   content[]{
     ...,
+    _type,
+    _type == "textBlock" => {
+      ...,
+      text
+    },
     _type == "imageBlock" => {
       ...,
       image,
-      "imageUrl": image.asset->url
+      "imageUrl": image.asset->url,
+      caption,
+      size
     },
     _type == "galleryBlock" => {
       ...,
       "images": images[]{
         ...,
-        "url": asset->url
-      }
+        "url": asset->url,
+        caption
+      },
+      columns
     },
     _type == "videoBlock" => {
       ...,
-      "videoUrl": url
+      "videoUrl": url,
+      caption
+    },
+    _type == "quoteBlock" => {
+      ...,
+      "quote": text,
+      author
     },
     _type == "processBlock" => {
       ...,
+      title,
       "steps": steps[]{
         ...,
+        title,
+        description,
         image,
         "imageUrl": image.asset->url
       }
@@ -69,69 +86,10 @@ const contentProjection = `
 export const queries = {
 
   // ─────────────────────────────────────────────
-  // НАСТРОЙКИ САЙТА
-  // ─────────────────────────────────────────────
-  mainSettings: `*[_type == "mainSettings"][0]{
-    _id,
-    artistName,
-    heroTitle,
-    heroSubtitle,
-    contactEmail,
-    contactPhone,
-    socialLinks
-  }`,
-
-  // ─────────────────────────────────────────────
-  // СОСТОЯНИЯ
-  // Landing: slug, title, audienceType, buttonLabel
-  // StatePage: всё
-  // Gallery: slug, title (для фильтров)
-  // ─────────────────────────────────────────────
-
-  allStates: `*[_type == "state"] | order(order asc){
-    _id,
-    "slug": slug.current,
-    title,
-    audienceType,
-    buttonLabel,
-    heroText,
-    stateText,
-    heroMedia,
-    heroVideo,
-    artistPresence{
-      ...,
-      "photoUrl": photo.asset->url,
-      photo
-    },
-    colorTheme
-  }`,
-
-  stateBySlug: (slug: string) => `
-    *[_type == "state" && slug.current == "${slug}"][0]{
-      _id,
-      "slug": slug.current,
-      title,
-      audienceType,
-      buttonLabel,
-      heroText,
-      stateText,
-      heroMedia,
-      "heroMediaUrl": heroMedia.asset->url,
-      heroVideo,
-      artistPresence{
-        ...,
-        "photoUrl": photo.asset->url,
-        photo
-      },
-      colorTheme
-    }
-  `,
-
-  // ─────────────────────────────────────────────
   // КАРТИНЫ
-  // Gallery: id, slug, imageUrl, title, feeling, stateSlug, image (raw)
-  // PaintingPage: всё + content[]
-  // MainPage: count
+  //
+  // Schema: stateTag (string: "energy"|"depth"|"balance"|"light")
+  // Schema: year (number) → Frontend: year (string)
   // ─────────────────────────────────────────────
 
   allPaintings: `*[_type == "painting"] | order(order asc){
@@ -148,7 +106,7 @@ export const queries = {
     technique,
     dimensions,
     available,
-    "stateSlug": state->slug.current
+    "stateSlug": stateTag
   }`,
 
   paintingBySlug: (slug: string) => `
@@ -166,13 +124,13 @@ export const queries = {
       technique,
       dimensions,
       available,
-      "stateSlug": state->slug.current,
+      "stateSlug": stateTag,
       ${contentProjection}
     }
   `,
 
-  paintingsByState: (stateSlug: string) => `
-    *[_type == "painting" && state->slug.current == "${stateSlug}"] | order(order asc){
+  paintingsByState: (stateTag: string) => `
+    *[_type == "painting" && stateTag == "${stateTag}"] | order(order asc){
       "id": _id,
       _id,
       "slug": slug.current,
@@ -183,14 +141,15 @@ export const queries = {
       "imageUrl": image.asset->url,
       "year": select(defined(year) => string(year), null),
       format,
-      "stateSlug": state->slug.current
+      "stateSlug": stateTag
     }
   `,
 
   // ─────────────────────────────────────────────
   // МАСТЕР-КЛАССЫ
-  // MainPage: slug, title, description, imageUrl, duration, price
-  // WorkshopPage: всё + heroImage (raw) + content[]
+  //
+  // Schema: heroImage, heroVideo, showBookingButton
+  // Frontend: imageUrl, videoUrl, showCTA
   // ─────────────────────────────────────────────
 
   allWorkshops: `*[_type == "workshop"] | order(order asc, date desc){
@@ -198,7 +157,9 @@ export const queries = {
     "slug": slug.current,
     title,
     description,
+    heroImage,
     "imageUrl": heroImage.asset->url,
+    "videoUrl": heroVideo,
     duration,
     price,
     "date": select(defined(date) => string(date), null),
@@ -219,10 +180,6 @@ export const queries = {
       price,
       "date": select(defined(date) => string(date), null),
       location,
-      "gallery": gallery[]{
-        ...,
-        "url": asset->url
-      },
       "showCTA": showBookingButton,
       bookingButtonText,
       bookingLink,
@@ -232,8 +189,9 @@ export const queries = {
 
   // ─────────────────────────────────────────────
   // ИНСТАЛЛЯЦИИ
-  // MainPage: slug, title, description, imageUrl, location, year
-  // InstallationPage: всё + heroImage (raw) + content[] (рендерит inline)
+  //
+  // Schema: heroImage, heroVideo, showBookingButton
+  // Frontend: imageUrl, showCTA
   // ─────────────────────────────────────────────
 
   allInstallations: `*[_type == "installation"] | order(order asc, year desc){
@@ -241,7 +199,9 @@ export const queries = {
     "slug": slug.current,
     title,
     description,
+    heroImage,
     "imageUrl": heroImage.asset->url,
+    "heroVideo": heroVideo,
     location,
     "year": select(defined(year) => string(year), null),
     "showCTA": showBookingButton,
@@ -270,8 +230,9 @@ export const queries = {
 
   // ─────────────────────────────────────────────
   // ПРОЕКТЫ
-  // MainPage: slug, title, type, description, imageUrl
-  // ProjectPage: всё + coverImage (raw) + content[] + gallery[]
+  //
+  // Schema: coverImage, projectType, dateStart/End, collaborators
+  // Frontend: imageUrl, type, startDate/endDate, participants
   // ─────────────────────────────────────────────
 
   allProjects: `*[_type == "project"] | order(order asc, dateStart desc){
@@ -280,10 +241,16 @@ export const queries = {
     title,
     "type": projectType,
     description,
+    coverImage,
     "imageUrl": coverImage.asset->url,
+    video,
+    location,
     "startDate": dateStart,
+    "endDate": dateEnd,
+    "participants": collaborators,
     showCTA,
     ctaText,
+    ctaLink,
     featured
   }`,
 
@@ -324,7 +291,6 @@ export const queries = {
 
   // ─────────────────────────────────────────────
   // МЫСЛИ ХУДОЖНИКА
-  // ThoughtsPage: id, side, text, time, mood
   // ─────────────────────────────────────────────
 
   allThoughts: `*[_type == "thought"] | order(order asc){
