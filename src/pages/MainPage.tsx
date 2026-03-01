@@ -419,7 +419,7 @@ export default function MainPage() {
   </video>
 
   <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
-  <div className="absolute inset-0 bg-milk/20" />
+  <div className="absolute inset-0 bg-milk/10" />
 </section>
 
       {/* Блок "Обо мне" */}
