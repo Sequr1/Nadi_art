@@ -12,18 +12,20 @@ export default function Gallery({ stateFilter, showFilters = true }: GalleryProp
   const [selectedState, setSelectedState] = useState<string>('all');
   const [visibleCount, setVisibleCount] = useState(6);
   const [paintings, setPaintings] = useState<any[]>([]);
-  const [states, setStates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Состояния захардкожены — не зависят от Sanity
+  const hardcodedStates = [
+    { slug: 'energy', title: 'Энергия' },
+    { slug: 'depth', title: 'Глубина' },
+    { slug: 'balance', title: 'Баланс' },
+    { slug: 'light', title: 'Свет' },
+  ];
+
   useEffect(() => {
-    Promise.all([
-      sanityClient.fetch(queries.allPaintings),
-      sanityClient.fetch(queries.allStates),
-    ])
-      .then(([paintingsData, statesData]) => {
-        setPaintings(paintingsData || []);
-        setStates(statesData || []);
-      })
+    sanityClient
+      .fetch(queries.allPaintings)
+      .then((data) => setPaintings(data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -40,7 +42,7 @@ export default function Gallery({ stateFilter, showFilters = true }: GalleryProp
 
   const stateFilters = [
     { value: 'all', label: 'Все состояния' },
-    ...states.map((state: any) => ({
+    ...hardcodedStates.map((state) => ({
       value: state.slug,
       label: state.title,
     })),
