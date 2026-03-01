@@ -405,20 +405,34 @@ export default function MainPage() {
       </section>
 
       {/* Видео блок */}
-<section className="relative w-full h-[65svh] md:h-[100svh] overflow-hidden">
+<section className="relative w-full h-screen overflow-hidden">
+
   <video
     autoPlay
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-cover object-[70%_15%] md:object-center"
+    className="absolute inset-0 w-full h-full object-cover"
+    poster="/video-poster.jpg"
   >
     <source src="/super.mp4" type="video/mp4" />
   </video>
 
-<div className="absolute inset-0 
-  bg-[linear-gradient(to_bottom,rgba(255,248,240,0.95)_0%,rgba(255,248,240,0.7)_12%,rgba(255,248,240,0.3)_20%,rgba(255,248,240,0)_28%)]" 
-/>
+  {/* Жёсткий двойной туман */}
+  <div
+    className="absolute inset-0 pointer-events-none
+    bg-[linear-gradient(to_bottom,
+    rgba(255,248,240,1)_0%,
+    rgba(255,248,240,0.9)_6%,
+    rgba(255,248,240,0.5)_12%,
+    rgba(255,248,240,0)_22%,
+    rgba(255,248,240,0)_78%,
+    rgba(255,248,240,0.5)_88%,
+    rgba(255,248,240,0.9)_94%,
+    rgba(255,248,240,1)_100%
+    )]"
+  />
+
 </section>
       {/* Блок "Обо мне" */}
       <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk via-mint-light/20 to-lavender-soft/20 relative overflow-hidden">
