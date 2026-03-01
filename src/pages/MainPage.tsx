@@ -419,19 +419,10 @@ export default function MainPage() {
   </video>
 
   {/* Жёсткий двойной туман */}
-  <div
-    className="absolute inset-0 pointer-events-none
-    bg-[linear-gradient(to_bottom,
-    rgba(255,248,240,1)_0%,
-    rgba(255,248,240,0.9)_6%,
-    rgba(255,248,240,0.5)_12%,
-    rgba(255,248,240,0)_22%,
-    rgba(255,248,240,0)_78%,
-    rgba(255,248,240,0.5)_88%,
-    rgba(255,248,240,0.9)_94%,
-    rgba(255,248,240,1)_100%
-    )]"
-  />
+{/* Жёсткий двойной туман */}
+<div
+  className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(255,248,240,1)_0%,rgba(255,248,240,0.9)_6%,rgba(255,248,240,0.5)_12%,rgba(255,248,240,0)_22%,rgba(255,248,240,0)_78%,rgba(255,248,240,0.5)_88%,rgba(255,248,240,0.9)_94%,rgba(255,248,240,1)_100%)]"
+/>
 
 </section>
       {/* Блок "Обо мне" */}
