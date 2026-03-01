@@ -411,7 +411,7 @@ export default function MainPage() {
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-cover"
+    className="absolute inset-0 w-full h-full object-contain"
     poster="/video-poster.jpg"
   >
     <source src="/super.mp4" type="video/mp4" />
