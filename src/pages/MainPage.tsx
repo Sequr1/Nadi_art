@@ -412,7 +412,7 @@ export default function MainPage() {
     muted
     playsInline
     className="absolute inset-0 w-full h-full object-cover"
-    poster="/video-poster.jpg"  // можно удалить или заменить, если не нужен
+    poster="/video-poster.jpg"
   >
     <source src="/super.mp4" type="video/mp4" />
     Ваш браузер не поддерживает видео.
@@ -420,8 +420,6 @@ export default function MainPage() {
 
   <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
   <div className="absolute inset-0 bg-milk/20" />
-    </p>
-  </div>
 </section>
 
       {/* Блок "Обо мне" */}
