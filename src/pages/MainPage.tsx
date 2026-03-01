@@ -411,12 +411,12 @@ export default function MainPage() {
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-cover"
+    className="absolute inset-0 w-full h-full object-cover object-[50%_15%] md:object-center"
   >
     <source src="/super.mp4" type="video/mp4" />
   </video>
 
-  <div className="absolute inset-0 bg-black/10" />
+  <div className="absolute inset-0 bg-gradient-to-b from-milk/60 via-milk/10 to-transparent" />
 </section>
 
       {/* Блок "Обо мне" */}
