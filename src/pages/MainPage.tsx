@@ -420,11 +420,6 @@ export default function MainPage() {
 
   <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
   <div className="absolute inset-0 bg-milk/20" />
-
-  <div className="absolute inset-0 flex items-center justify-center">
-    <p className="font-serif text-2xl md:text-4xl lg:text-5xl text-text-primary/80 text-center px-6 max-w-3xl leading-relaxed">
-      Процесс создания — <br className="hidden sm:block" />
-      <span className="text-amethyst">это тоже искусство</span>
     </p>
   </div>
 </section>
