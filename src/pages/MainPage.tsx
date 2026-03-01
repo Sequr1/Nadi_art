@@ -411,7 +411,7 @@ export default function MainPage() {
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-cover scale-80 object-[70%_15%] md:object-center"
+    className="absolute inset-0 w-full h-full object-cover object-[70%_15%] md:object-center scale-110"
   >
     <source src="/super.mp4" type="video/mp4" />
   </video>
