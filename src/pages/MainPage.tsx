@@ -405,13 +405,13 @@ export default function MainPage() {
       </section>
 
       {/* Видео блок */}
-<section className="relative w-full h-[100svh] overflow-hidden">
+<section className="relative w-full h-[65svh] md:h-[100svh] overflow-hidden">
   <video
     autoPlay
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-cover object-[70%_15%] md:object-center scale-60"
+    className="absolute inset-0 w-full h-full object-cover object-[70%_15%] md:object-center"
   >
     <source src="/super.mp4" type="video/mp4" />
   </video>
