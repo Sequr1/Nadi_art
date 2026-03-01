@@ -405,21 +405,18 @@ export default function MainPage() {
       </section>
 
       {/* Видео блок */}
-<section className="relative w-full h-screen overflow-hidden">
+<section className="relative w-full h-[100svh] overflow-hidden">
   <video
     autoPlay
     loop
     muted
     playsInline
-    className="absolute inset-0 w-full h-full object-contain"
-    poster="/video-poster.jpg"
+    className="absolute inset-0 w-full h-full object-cover"
   >
     <source src="/super.mp4" type="video/mp4" />
-    Ваш браузер не поддерживает видео.
   </video>
 
-  <div className="absolute inset-0 bg-gradient-to-b from-milk via-transparent to-milk" />
-  <div className="absolute inset-0 bg-milk/10" />
+  <div className="absolute inset-0 bg-black/10" />
 </section>
 
       {/* Блок "Обо мне" */}
