@@ -416,10 +416,9 @@ export default function MainPage() {
     <source src="/super.mp4" type="video/mp4" />
   </video>
 
-<div className="absolute inset-0 bg-gradient-to-b 
-  from-milk/80 from-0% 
-  via-milk/40 via-15% 
-  to-transparent to-30%" />
+<div className="absolute inset-0 
+  bg-[linear-gradient(to_bottom,rgba(255,248,240,0.95)_0%,rgba(255,248,240,0.7)_12%,rgba(255,248,240,0.3)_20%,rgba(255,248,240,0)_28%)]" 
+/>
 </section>
       {/* Блок "Обо мне" */}
       <section className="py-24 md:py-32 px-6 md:px-12 bg-gradient-to-b from-milk via-mint-light/20 to-lavender-soft/20 relative overflow-hidden">
