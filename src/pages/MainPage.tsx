@@ -321,13 +321,14 @@ export default function MainPage() {
           {activeSection === 'workshops' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedWorkshops.map((workshop: any) => {
-                const imgUrl = urlFor(workshop.heroImage)?.width(800)?.url() || workshop.imageUrl;
+                if (!workshop) return null;
+                const imgUrl = workshop.heroImage ? (urlFor(workshop.heroImage)?.width(800)?.url() || workshop.imageUrl) : workshop.imageUrl;
                 
                 return (
                   <div
-                    key={workshop._id}
+                    key={workshop._id || Math.random()}
                     className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                    onClick={() => navigate(`/workshop/${workshop.slug}`)}
+                    onClick={() => workshop.slug && navigate(`/workshop/${workshop.slug}`)}
                   >
                     <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
                       {imgUrl ? (
@@ -365,13 +366,14 @@ export default function MainPage() {
           {activeSection === 'installations' && (
             <div className="grid md:grid-cols-2 gap-6">
               {sortedInstallations.map((installation: any) => {
-                const imgUrl = urlFor(installation.heroImage)?.width(1200)?.url() || installation.imageUrl;
+                if (!installation) return null;
+                const imgUrl = installation.heroImage ? (urlFor(installation.heroImage)?.width(1200)?.url() || installation.imageUrl) : installation.imageUrl;
                 
                 return (
                   <div
-                    key={installation._id}
+                    key={installation._id || Math.random()}
                     className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                    onClick={() => navigate(`/installation/${installation.slug}`)}
+                    onClick={() => installation.slug && navigate(`/installation/${installation.slug}`)}
                   >
                     <div className="aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-lavender-soft">
                       {imgUrl ? (
@@ -409,10 +411,11 @@ export default function MainPage() {
           {activeSection === 'projects' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedProjects.map((project: any) => {
-                const imgUrl = urlFor(project.coverImage)?.width(1200)?.url() || project.imageUrl;
+                if (!project) return null;
+                const imgUrl = project.coverImage ? (urlFor(project.coverImage)?.width(1200)?.url() || project.imageUrl) : project.imageUrl;
                 
                 return (
-                  <div key={project._id} className="group card-soft p-5 hover:bg-white cursor-pointer" onClick={() => navigate(`/project/${project.slug}`)}>
+                  <div key={project._id || Math.random()} className="group card-soft p-5 hover:bg-white cursor-pointer" onClick={() => project.slug && navigate(`/project/${project.slug}`)}>
                     <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
                       {imgUrl ? (
                         <img 

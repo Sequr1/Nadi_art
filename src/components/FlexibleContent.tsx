@@ -48,22 +48,26 @@ function renderPortableText(textArray: any) {
 // Получить URL изображения (resolved или через urlFor)
 function getImageUrl(image: any, resolvedUrl?: string, width = 1200): string {
   if (resolvedUrl) return resolvedUrl;
-  if (image) {
-    try {
-      return urlFor(image)?.width(width)?.url();
-    } catch {
-      return '';
-    }
+  if (!image) return '';
+  
+  try {
+    const builder = urlFor(image);
+    if (!builder) return '';
+    return builder.width(width)?.url() || '';
+  } catch (err) {
+    console.error('getImageUrl error:', err);
+    return '';
   }
-  return '';
 }
 
 export default function FlexibleContent({ content }: FlexibleContentProps) {
-  if (!content || content.length === 0) return null;
+  if (!content || !Array.isArray(content) || content.length === 0) return null;
 
   return (
     <div className="space-y-10">
       {content.map((block: any, index: number) => {
+        if (!block || !block._type) return null;
+
         switch (block._type) {
           // ── Текст ──
           case 'textBlock':

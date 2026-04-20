@@ -98,12 +98,13 @@ export default function Gallery({ stateFilter, showFilters = true }: GalleryProp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {visiblePaintings.map((painting: any, index: number) => {
-          const imgUrl = painting.image ? urlFor(painting.image)?.width(800)?.url() : painting.imageUrl;
+          if (!painting) return null;
+          const imgUrl = painting.image ? (urlFor(painting.image)?.width(800)?.url() || painting.imageUrl) : painting.imageUrl;
           
           return (
             <div
-              key={painting._id || painting.id}
-              onClick={() => navigate(`/painting/${painting.slug}`)}
+              key={painting._id || index}
+              onClick={() => painting.slug && navigate(`/painting/${painting.slug}`)}
               className="group cursor-pointer opacity-0 animate-fade-in-up"
               style={{ animationDelay: `${index * 100}ms` }}
              >
