@@ -41,48 +41,27 @@ const contentProjection = `
   content[]{
     ...,
     _type,
-    _type == "textBlock" => {
-      ...,
-      text
-    },
     _type == "imageBlock" => {
       ...,
-      image,
       "imageUrl": image.asset->url,
-      caption,
-      size
+      caption
+    },
+    _type == "videoBlock" => {
+      ...,
+      "videoUrl": videoFile.asset->url,
+      caption
     },
     _type == "galleryBlock" => {
       ...,
       "images": images[]{
         ...,
-        "url": asset->url,
-        caption
-      },
-      columns
-    },
-    _type == "videoBlock" => {
-      ...,
-      "videoUrl": select(
-        defined(videoFile) => videoFile.asset->url,
-        url
-      ),
-      "videoFileUrl": videoFile.asset->url,
-      caption
-    },
-    _type == "quoteBlock" => {
-      ...,
-      "quote": text,
-      author
+        "url": asset->url
+      }
     },
     _type == "processBlock" => {
       ...,
-      title,
       "steps": steps[]{
         ...,
-        title,
-        description,
-        image,
         "imageUrl": image.asset->url
       }
     }
@@ -151,21 +130,17 @@ export const queries = {
 
   // ─── МАСТЕР-КЛАССЫ ───
 
-  allWorkshops: `*[_type == "workshop"] | order(order asc, date desc){
+  allWorkshops: `*[_type == "workshop"] | order(order asc, title asc){
     _id,
     "slug": slug.current,
     title,
     description,
     heroImage,
     "imageUrl": heroImage.asset->url,
-    "videoUrl": select(
-      defined(videoFile) => videoFile.asset->url,
-      heroVideo
-    ),
-    "videoFileUrl": videoFile.asset->url,
+    "videoUrl": videoFile.asset->url,
     duration,
     price,
-    "date": select(defined(date) => string(date), null),
+    date,
     location
   }`,
 
@@ -177,14 +152,10 @@ export const queries = {
       description,
       heroImage,
       "imageUrl": heroImage.asset->url,
-      "videoUrl": select(
-        defined(videoFile) => videoFile.asset->url,
-        heroVideo
-      ),
-      "videoFileUrl": videoFile.asset->url,
+      "videoUrl": videoFile.asset->url,
       duration,
       price,
-      "date": select(defined(date) => string(date), null),
+      date,
       location,
       ${contentProjection}
     }
@@ -192,20 +163,16 @@ export const queries = {
 
   // ─── ИНСТАЛЛЯЦИИ ───
 
-  allInstallations: `*[_type == "installation"] | order(order asc, year desc){
+  allInstallations: `*[_type == "installation"] | order(order asc, title asc){
     _id,
     "slug": slug.current,
     title,
     description,
     heroImage,
     "imageUrl": heroImage.asset->url,
-    "videoUrl": select(
-      defined(videoFile) => videoFile.asset->url,
-      heroVideo
-    ),
-    "videoFileUrl": videoFile.asset->url,
+    "videoUrl": videoFile.asset->url,
     location,
-    "year": select(defined(year) => string(year), null)
+    year
   }`,
 
   installationBySlug: (slug: string) => `
@@ -216,12 +183,7 @@ export const queries = {
       description,
       heroImage,
       "imageUrl": heroImage.asset->url,
-      "videoUrl": select(
-        defined(videoFile) => videoFile.asset->url,
-        heroVideo
-      ),
-      "videoFileUrl": videoFile.asset->url,
-      heroVideo,
+      "videoUrl": videoFile.asset->url,
       location,
       year,
       materials,
@@ -232,7 +194,7 @@ export const queries = {
 
   // ─── ПРОЕКТЫ ───
 
-  allProjects: `*[_type == "project"] | order(order asc, dateStart desc){
+  allProjects: `*[_type == "project"] | order(order asc, title asc){
     _id,
     "slug": slug.current,
     title,
@@ -240,16 +202,11 @@ export const queries = {
     description,
     coverImage,
     "imageUrl": coverImage.asset->url,
-    "videoUrl": select(
-      defined(videoFile) => videoFile.asset->url,
-      video
-    ),
-    "videoFileUrl": videoFile.asset->url,
+    "videoUrl": videoFile.asset->url,
     location,
     "startDate": dateStart,
     "endDate": dateEnd,
-    "participants": collaborators,
-    ctaText
+    "participants": collaborators
   }`,
 
   projectBySlug: (slug: string) => `
@@ -261,20 +218,11 @@ export const queries = {
       description,
       coverImage,
       "imageUrl": coverImage.asset->url,
-      "videoUrl": select(
-        defined(videoFile) => videoFile.asset->url,
-        video
-      ),
-      "videoFileUrl": videoFile.asset->url,
+      "videoUrl": videoFile.asset->url,
       location,
       "startDate": dateStart,
       "endDate": dateEnd,
       "participants": collaborators,
-      "gallery": gallery[]{
-        ...,
-        "url": asset->url
-      },
-      ctaText,
       ${contentProjection}
     }
   `,

@@ -68,43 +68,13 @@ export default function ProjectPage() {
           )}
 
           <div className="text-center max-w-2xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <span className="text-xs text-lavender uppercase tracking-wider">{typeLabel}</span>
             <h1 className="font-serif text-4xl md:text-5xl text-text-primary mb-4 mt-2 break-words">{project.title}</h1>
-            <p className="text-text-secondary font-light text-lg leading-relaxed mb-6 break-words">{project.description}</p>
-            <div className="flex items-center justify-center gap-6 text-text-muted text-sm mb-10 flex-wrap">
-              {project.startDate && <span className="break-words">📅 {project.startDate}{project.endDate && ` — ${project.endDate}`}</span>}
-              {project.location && <span className="break-words">📍 {project.location}</span>}
-            </div>
-
-            {project.participants && project.participants.length > 0 && (
-              <div className="mb-10 pt-6 border-t border-lavender-soft/50">
-                <h3 className="text-sm text-text-muted uppercase tracking-wider mb-3">Участники</h3>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {project.participants.map((p: string, idx: number) => (
-                    <span key={idx} className="px-3 py-1 bg-lavender-soft/50 rounded-full text-sm text-text-secondary break-words">{p}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <p className="text-text-secondary font-light text-lg leading-relaxed mb-10 break-words">{project.description}</p>
           </div>
 
           {project.content && project.content.length > 0 && (
             <div className="mt-12 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <FlexibleContent content={project.content} />
-            </div>
-          )}
-
-          {project.gallery && project.gallery.length > 0 && (
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-              {project.gallery.map((img: any, idx: number) => {
-                const imgUrl = img.url || (img.asset ? urlFor(img)?.width(800)?.url() : img);
-                if (!imgUrl) return null;
-                return (
-                  <div key={idx} className="aspect-square rounded-2xl overflow-hidden">
-                    <img src={imgUrl} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-                  </div>
-                );
-              })}
             </div>
           )}
 

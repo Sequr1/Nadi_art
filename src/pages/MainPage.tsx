@@ -98,6 +98,11 @@ export default function MainPage() {
     },
   ];
 
+  // Сортировка данных по полю order, если оно есть
+  const sortedWorkshops = [...workshops].sort((a, b) => (a.order || 99) - (b.order || 99));
+  const sortedInstallations = [...installations].sort((a, b) => (a.order || 99) - (b.order || 99));
+  const sortedProjects = [...projects].sort((a, b) => (a.order || 99) - (b.order || 99));
+
   const aboutFacts = [
     {
       emoji: '🎨',
@@ -315,7 +320,7 @@ export default function MainPage() {
           
           {activeSection === 'workshops' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {workshops.map((workshop: any) => {
+              {sortedWorkshops.map((workshop: any) => {
                 const imgUrl = urlFor(workshop.heroImage)?.width(800)?.url() || workshop.imageUrl;
                 
                 return (
@@ -343,11 +348,7 @@ export default function MainPage() {
                     </div>
                     <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{workshop.title}</h3>
                     <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{workshop.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-text-muted text-xs">
-                        <span>{workshop.duration}</span>
-                        {workshop.price && <span>{workshop.price}</span>}
-                      </div>
+                    <div className="flex items-center justify-end">
                       <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
                     </div>
                   </div>
@@ -363,7 +364,7 @@ export default function MainPage() {
           
           {activeSection === 'installations' && (
             <div className="grid md:grid-cols-2 gap-6">
-              {installations.map((installation: any) => {
+              {sortedInstallations.map((installation: any) => {
                 const imgUrl = urlFor(installation.heroImage)?.width(1200)?.url() || installation.imageUrl;
                 
                 return (
@@ -391,11 +392,7 @@ export default function MainPage() {
                     </div>
                     <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{installation.title}</h3>
                     <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{installation.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-text-muted text-xs">
-                        {installation.location && <span>{installation.location}</span>}
-                        {installation.year && <span>{installation.year}</span>}
-                      </div>
+                    <div className="flex items-center justify-end">
                       <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
                     </div>
                   </div>
@@ -411,7 +408,7 @@ export default function MainPage() {
           
           {activeSection === 'projects' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project: any) => {
+              {sortedProjects.map((project: any) => {
                 const imgUrl = urlFor(project.coverImage)?.width(1200)?.url() || project.imageUrl;
                 
                 return (
@@ -433,9 +430,6 @@ export default function MainPage() {
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-lavender uppercase tracking-wider">
-                      {project.type === 'exhibition' ? 'Выставка' : project.type === 'collaboration' ? 'Коллаборация' : 'Перформанс'}
-                    </span>
                     <h3 className="font-serif text-lg text-text-primary mb-2 mt-2 group-hover:text-amethyst transition-colors">{project.title}</h3>
                     <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{project.description}</p>
                     <div className="flex justify-end">

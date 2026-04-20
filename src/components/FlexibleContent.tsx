@@ -65,8 +65,7 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
     <div className="space-y-10">
       {content.map((block: any, index: number) => {
         switch (block._type) {
-
-          // ── Текстовый блок ──
+          // ── Текст ──
           case 'textBlock':
             return (
               <div key={block._key || index} className="max-w-2xl mx-auto">
@@ -74,30 +73,18 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
               </div>
             );
 
-          // ── Изображение ──
+          // ── Фото ──
           case 'imageBlock': {
-            const imgUrl = getImageUrl(block.image, block.imageUrl);
+            const imgUrl = block.imageUrl || getImageUrl(block.image, undefined);
             if (!imgUrl) return null;
 
             return (
-              <div
-                key={block._key || index}
-                className={`mx-auto ${
-                  block.size === 'full' ? 'max-w-full' :
-                  block.size === 'large' ? 'max-w-4xl' :
-                  block.size === 'medium' ? 'max-w-2xl' :
-                  'max-w-md'
-                }`}
-              >
+              <div key={block._key || index} className="max-w-4xl mx-auto">
                 <img
                   src={imgUrl}
                   alt={block.caption || ''}
                   className="w-full rounded-2xl shadow-lg shadow-text-primary/5 bg-lavender-soft/20"
                   loading="lazy"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
                 />
                 {block.caption && (
                   <p className="text-text-muted text-sm text-center mt-3 font-light italic break-words">
@@ -110,17 +97,16 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
 
           // ── Видео ──
           case 'videoBlock': {
-            const videoUrl = block.videoUrl || block.url;
+            const videoUrl = block.videoUrl;
             if (!videoUrl) return null;
 
             return (
               <div key={block._key || index} className="max-w-4xl mx-auto">
-                <div className="aspect-video rounded-2xl overflow-hidden shadow-lg shadow-text-primary/5">
-                  <iframe
+                <div className="aspect-video rounded-2xl overflow-hidden shadow-lg shadow-text-primary/5 bg-black">
+                  <video
                     src={videoUrl}
+                    controls
                     className="w-full h-full"
-                    allowFullScreen
-                    title={block.caption || 'Видео'}
                   />
                 </div>
                 {block.caption && (
@@ -132,7 +118,7 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
             );
           }
 
-          // ── Галерея ──
+          // ── Несколько фото (Галерея) ──
           case 'galleryBlock': {
             if (!block.images || block.images.length === 0) return null;
 
@@ -144,7 +130,6 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
                   'grid-cols-2 md:grid-cols-3'
                 }`}>
                   {block.images.map((img: any, imgIndex: number) => {
-                    // img.url (resolved) или urlFor(img) (raw image ref)
                     const imgUrl = img.url || getImageUrl(img, undefined, 800);
                     if (!imgUrl) return null;
 
@@ -152,7 +137,7 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
                       <div key={img._key || imgIndex} className="aspect-square rounded-xl overflow-hidden">
                         <img
                           src={imgUrl}
-                          alt={img.caption || ''}
+                          alt=""
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                         />
                       </div>
@@ -169,7 +154,7 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
               <div key={block._key || index} className="max-w-2xl mx-auto text-center py-8 px-4">
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl px-8 py-6 shadow-lg shadow-lavender/10">
                   <blockquote className="font-serif text-xl md:text-2xl text-text-primary italic break-words">
-                    «{block.quote || block.text}»
+                    «{block.text}»
                   </blockquote>
                   {block.author && (
                     <div className="mt-4 flex items-center justify-center gap-2">
@@ -182,22 +167,22 @@ export default function FlexibleContent({ content }: FlexibleContentProps) {
               </div>
             );
 
-          // ── Процесс создания (только инсталляции) ──
+          // ── Процесс ──
           case 'processBlock':
             return (
               <div key={block._key || index} className="max-w-3xl mx-auto mb-16">
-                <h2 className="font-serif text-2xl text-text-primary mb-8">
-                  {block.title || 'Процесс создания'}
-                </h2>
+                {block.title && (
+                  <h2 className="font-serif text-2xl text-text-primary mb-8">{block.title}</h2>
+                )}
                 {block.steps?.map((step: any, i: number) => {
-                  const stepImgUrl = getImageUrl(step.image, step.imageUrl, 1000);
+                  const stepImgUrl = getImageUrl(step.image, undefined, 1000);
 
                   return (
                     <div key={step._key || i} className="mb-10">
-                      <h3 className="font-medium text-text-primary mb-2 text-lg">{step.title}</h3>
-                      <p className="text-text-secondary font-light leading-relaxed mb-4">{step.description}</p>
+                      {step.title && <h3 className="font-medium text-text-primary mb-2 text-lg">{step.title}</h3>}
+                      {step.description && <p className="text-text-secondary font-light leading-relaxed mb-4">{step.description}</p>}
                       {stepImgUrl && (
-                        <img src={stepImgUrl} className="rounded-xl w-full" alt={step.title || ''} />
+                        <img src={stepImgUrl} className="rounded-xl w-full" alt="" />
                       )}
                     </div>
                   );

@@ -52,9 +52,9 @@ export default function InstallationPage() {
       </nav>
 
       {/* Hero */}
-      {installation.heroVideo ? (
-        <div className="pt-20 aspect-video w-full">
-          <iframe src={installation.heroVideo} className="w-full h-full" allowFullScreen />
+      {installation.videoUrl ? (
+        <div className="pt-20 aspect-video w-full bg-black">
+          <video src={installation.videoUrl} className="w-full h-full" controls />
         </div>
       ) : imageUrl ? (
         <div className="pt-20 h-[60vh] overflow-hidden">
@@ -64,12 +64,6 @@ export default function InstallationPage() {
 
       <div className="max-w-4xl mx-auto px-6 py-16">
         <h1 className="font-serif text-4xl md:text-5xl text-text-primary mb-6">{installation.title}</h1>
-
-        <div className="flex gap-6 text-text-muted mb-8">
-          {installation.location && <span>📍 {installation.location}</span>}
-          {installation.year && <span>📅 {installation.year}</span>}
-          {installation.materials && <span>🔧 {installation.materials}</span>}
-        </div>
 
         {installation.description && (
           <p className="text-text-secondary font-light text-lg leading-relaxed mb-12">{installation.description}</p>

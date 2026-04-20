@@ -78,13 +78,7 @@ export default function WorkshopPage() {
 
           <div className="text-center max-w-2xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <h1 className="font-serif text-4xl md:text-5xl text-text-primary mb-4 break-words">{workshop.title}</h1>
-            <p className="text-text-secondary font-light text-lg leading-relaxed mb-6 break-words">{workshop.description}</p>
-            <div className="flex items-center justify-center gap-6 text-text-muted text-sm mb-10 flex-wrap">
-              {workshop.duration && <span className="break-words">⏱ {workshop.duration}</span>}
-              {workshop.price && <span className="break-words">💰 {workshop.price}</span>}
-              {workshop.date && <span className="break-words">📅 {workshop.date}</span>}
-              {workshop.location && <span className="break-words">📍 {workshop.location}</span>}
-            </div>
+            <p className="text-text-secondary font-light text-lg leading-relaxed mb-10 break-words">{workshop.description}</p>
           </div>
 
           {workshop.content && workshop.content.length > 0 && (
