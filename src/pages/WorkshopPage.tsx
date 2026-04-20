@@ -42,7 +42,7 @@ export default function WorkshopPage() {
     );
   }
 
-  const imageUrl = urlFor(workshop.heroImage)?.width(1200).url() || workshop.imageUrl;
+  const imageUrl = urlFor(workshop.heroImage)?.width(1200)?.url() || workshop.imageUrl;
 
   return (
     <div className="min-h-screen bg-milk overflow-x-hidden">

@@ -98,7 +98,7 @@ export default function Gallery({ stateFilter, showFilters = true }: GalleryProp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {visiblePaintings.map((painting: any, index: number) => {
-          const imgUrl = painting.image ? urlFor(painting.image)?.width(800).url() : painting.imageUrl;
+          const imgUrl = painting.image ? urlFor(painting.image)?.width(800)?.url() : painting.imageUrl;
           
           return (
             <div

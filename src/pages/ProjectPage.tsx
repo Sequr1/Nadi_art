@@ -45,7 +45,7 @@ export default function ProjectPage() {
   const typeLabel = project.type === 'exhibition' ? 'Выставка' :
                     project.type === 'collaboration' ? 'Коллаборация' : 'Перформанс';
 
-  const imageUrl = project.coverImage ? urlFor(project.coverImage).width(1200).url() : project.imageUrl;
+  const imageUrl = project.coverImage ? urlFor(project.coverImage)?.width(1200)?.url() : project.imageUrl;
 
   return (
     <div className="min-h-screen bg-milk overflow-x-hidden">
@@ -97,7 +97,7 @@ export default function ProjectPage() {
           {project.gallery && project.gallery.length > 0 && (
             <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
               {project.gallery.map((img: any, idx: number) => {
-                const imgUrl = img.url || (img.asset ? urlFor(img).width(800).url() : img);
+                const imgUrl = img.url || (img.asset ? urlFor(img)?.width(800)?.url() : img);
                 if (!imgUrl) return null;
                 return (
                   <div key={idx} className="aspect-square rounded-2xl overflow-hidden">

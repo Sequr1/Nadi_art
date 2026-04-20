@@ -42,7 +42,7 @@ export default function InstallationPage() {
     );
   }
 
-  const imageUrl = installation.heroImage ? urlFor(installation.heroImage).width(1200).url() : installation.imageUrl;
+  const imageUrl = installation.heroImage ? urlFor(installation.heroImage)?.width(1200)?.url() : installation.imageUrl;
 
   return (
     <div className="min-h-screen bg-milk overflow-x-hidden">

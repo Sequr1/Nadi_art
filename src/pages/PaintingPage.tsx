@@ -41,7 +41,7 @@ export default function PaintingPage() {
     );
   }
 
-  const imageUrl = painting.image ? urlFor(painting.image).width(1200).url() : painting.imageUrl;
+  const imageUrl = painting.image ? urlFor(painting.image)?.width(1200)?.url() : painting.imageUrl;
 
   return (
     <div className="min-h-screen bg-milk overflow-x-hidden">

@@ -228,7 +228,7 @@ export default function StatePage() {
                 >
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-lavender-soft/20 mb-4">
                     <img
-                      src={painting.image ? urlFor(painting.image).width(800).url() : painting.imageUrl}
+                      src={painting.image ? urlFor(painting.image)?.width(800)?.url() : painting.imageUrl}
                       alt={painting.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />

@@ -50,7 +50,7 @@ function getImageUrl(image: any, resolvedUrl?: string, width = 1200): string {
   if (resolvedUrl) return resolvedUrl;
   if (image) {
     try {
-      return urlFor(image).width(width).url();
+      return urlFor(image)?.width(width)?.url();
     } catch {
       return '';
     }

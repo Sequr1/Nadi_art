@@ -316,7 +316,7 @@ export default function MainPage() {
           {activeSection === 'workshops' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {workshops.map((workshop: any) => {
-                const imgUrl = urlFor(workshop.heroImage)?.width(800).url() || workshop.imageUrl;
+                const imgUrl = urlFor(workshop.heroImage)?.width(800)?.url() || workshop.imageUrl;
                 
                 return (
                   <div
@@ -364,7 +364,7 @@ export default function MainPage() {
           {activeSection === 'installations' && (
             <div className="grid md:grid-cols-2 gap-6">
               {installations.map((installation: any) => {
-                const imgUrl = urlFor(installation.heroImage)?.width(1200).url() || installation.imageUrl;
+                const imgUrl = urlFor(installation.heroImage)?.width(1200)?.url() || installation.imageUrl;
                 
                 return (
                   <div
@@ -412,7 +412,7 @@ export default function MainPage() {
           {activeSection === 'projects' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project: any) => {
-                const imgUrl = urlFor(project.coverImage)?.width(1200).url() || project.imageUrl;
+                const imgUrl = urlFor(project.coverImage)?.width(1200)?.url() || project.imageUrl;
                 
                 return (
                   <div key={project._id} className="group card-soft p-5 hover:bg-white cursor-pointer" onClick={() => navigate(`/project/${project.slug}`)}>
