@@ -309,10 +309,10 @@ export default function MainPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-serif font-light text-2xl md:text-3xl text-text-primary mb-3">
-              {categories.find(c => c.id === activeSection)?.title}
+              {categories.find(c => c.id === activeSection)?.title || 'Раздел'}
             </h2>
             <p className="text-text-secondary font-light text-sm md:text-base">
-              {categories.find(c => c.id === activeSection)?.subtitle}
+              {categories.find(c => c.id === activeSection)?.subtitle || ''}
             </p>
           </div>
 
