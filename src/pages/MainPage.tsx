@@ -98,10 +98,18 @@ export default function MainPage() {
     },
   ];
 
-  // Сортировка данных по полю order, если оно есть
-  const sortedWorkshops = [...workshops].sort((a, b) => (a.order || 99) - (b.order || 99));
-  const sortedInstallations = [...installations].sort((a, b) => (a.order || 99) - (b.order || 99));
-  const sortedProjects = [...projects].sort((a, b) => (a.order || 99) - (b.order || 99));
+  // Сортировка данных по полю order
+  const sortedWorkshops = Array.isArray(workshops) 
+    ? [...workshops].sort((a, b) => (Number(a?.order) || 99) - (Number(b?.order) || 99))
+    : [];
+    
+  const sortedInstallations = Array.isArray(installations)
+    ? [...installations].sort((a, b) => (Number(a?.order) || 99) - (Number(b?.order) || 99))
+    : [];
+    
+  const sortedProjects = Array.isArray(projects)
+    ? [...projects].sort((a, b) => (Number(a?.order) || 99) - (Number(b?.order) || 99))
+    : [];
 
   const aboutFacts = [
     {
@@ -307,145 +315,100 @@ export default function MainPage() {
       {/* Развернутый раздел */}
       <section ref={sectionRef} className="px-6 md:px-12 pb-20 bg-white/30 animate-fade-in scroll-mt-24">
         <div className="max-w-7xl mx-auto">
+          {/* Заголовок текущего раздела */}
           <div className="text-center mb-12">
             <h2 className="font-serif font-light text-2xl md:text-3xl text-text-primary mb-3">
-              {categories.find(c => c.id === activeSection)?.title || 'Раздел'}
+              {activeSection === 'paintings' ? 'Картины' :
+               activeSection === 'workshops' ? 'Мастер-классы' :
+               activeSection === 'installations' ? 'Инсталляции' :
+               activeSection === 'projects' ? 'Проекты' : 'Раздел'}
             </h2>
-            <p className="text-text-secondary font-light text-sm md:text-base">
-              {categories.find(c => c.id === activeSection)?.subtitle || ''}
-            </p>
           </div>
 
+          {/* Контент: Картины */}
           {activeSection === 'paintings' && <Gallery showFilters />}
           
+          {/* Контент: Мастер-классы */}
           {activeSection === 'workshops' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedWorkshops.map((workshop: any) => {
-                if (!workshop) return null;
-                const imgUrl = workshop.heroImage ? (urlFor(workshop.heroImage)?.width(800)?.url() || workshop.imageUrl) : workshop.imageUrl;
-                
-                return (
-                  <div
-                    key={workshop._id || Math.random()}
-                    className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                    onClick={() => workshop.slug && navigate(`/workshop/${workshop.slug}`)}
-                  >
-                    <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                      {imgUrl ? (
-                        <img
-                          src={imgUrl}
-                          alt={workshop.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/nadi.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-lavender-soft/30 text-text-muted">
-                          <span className="text-xs">Нет фото</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{workshop.title}</h3>
-                    <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{workshop.description}</p>
-                    <div className="flex items-center justify-end">
-                      <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
-                    </div>
+              {sortedWorkshops.map((item: any) => (
+                <div
+                  key={item?._id || Math.random()}
+                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
+                  onClick={() => item?.slug && navigate(`/workshop/${item.slug}`)}
+                >
+                  <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
+                    {item?.heroImage ? (
+                      <img
+                        src={urlFor(item.heroImage)?.width(800)?.url() || '/nadi.png'}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
+                    )}
                   </div>
-                );
-              })}
-              {workshops.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-text-muted font-light">Мастер-классы скоро появятся</p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
                 </div>
-              )}
+              ))}
+              {sortedWorkshops.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Мастер-классы скоро появятся</p>}
             </div>
           )}
           
+          {/* Контент: Инсталляции */}
           {activeSection === 'installations' && (
             <div className="grid md:grid-cols-2 gap-6">
-              {sortedInstallations.map((installation: any) => {
-                if (!installation) return null;
-                const imgUrl = installation.heroImage ? (urlFor(installation.heroImage)?.width(1200)?.url() || installation.imageUrl) : installation.imageUrl;
-                
-                return (
-                  <div
-                    key={installation._id || Math.random()}
-                    className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                    onClick={() => installation.slug && navigate(`/installation/${installation.slug}`)}
-                  >
-                    <div className="aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                      {imgUrl ? (
-                        <img 
-                          src={imgUrl} 
-                          alt={installation.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/nadi.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-lavender-soft/30 text-text-muted">
-                          <span className="text-xs">Нет фото</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{installation.title}</h3>
-                    <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{installation.description}</p>
-                    <div className="flex items-center justify-end">
-                      <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
-                    </div>
+              {sortedInstallations.map((item: any) => (
+                <div
+                  key={item?._id || Math.random()}
+                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
+                  onClick={() => item?.slug && navigate(`/installation/${item.slug}`)}
+                >
+                  <div className="aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-lavender-soft">
+                    {item?.heroImage ? (
+                      <img 
+                        src={urlFor(item.heroImage)?.width(1200)?.url() || '/nadi.png'} 
+                        alt="" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
+                    )}
                   </div>
-                );
-              })}
-              {installations.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-text-muted font-light">Инсталляции скоро появятся</p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
                 </div>
-              )}
+              ))}
+              {sortedInstallations.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Инсталляции скоро появятся</p>}
             </div>
           )}
           
+          {/* Контент: Проекты */}
           {activeSection === 'projects' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedProjects.map((project: any) => {
-                if (!project) return null;
-                const imgUrl = project.coverImage ? (urlFor(project.coverImage)?.width(1200)?.url() || project.imageUrl) : project.imageUrl;
-                
-                return (
-                  <div key={project._id || Math.random()} className="group card-soft p-5 hover:bg-white cursor-pointer" onClick={() => project.slug && navigate(`/project/${project.slug}`)}>
-                    <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                      {imgUrl ? (
-                        <img 
-                          src={imgUrl} 
-                          alt={project.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/nadi.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-lavender-soft/30 text-text-muted">
-                          <span className="text-xs">Нет фото</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-serif text-lg text-text-primary mb-2 mt-2 group-hover:text-amethyst transition-colors">{project.title}</h3>
-                    <p className="text-text-secondary text-sm font-light line-clamp-2 mb-3">{project.description}</p>
-                    <div className="flex justify-end">
-                      <span className="text-amethyst text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">Подробнее →</span>
-                    </div>
+              {sortedProjects.map((item: any) => (
+                <div 
+                  key={item?._id || Math.random()} 
+                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden" 
+                  onClick={() => item?.slug && navigate(`/project/${item.slug}`)}
+                >
+                  <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
+                    {item?.coverImage ? (
+                      <img 
+                        src={urlFor(item.coverImage)?.width(1200)?.url() || '/nadi.png'} 
+                        alt="" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
+                    )}
                   </div>
-                );
-              })}
-              {projects.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-text-muted font-light">Проекты скоро появятся</p>
+                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
+                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
                 </div>
-              )}
+              ))}
+              {sortedProjects.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Проекты скоро появятся</p>}
             </div>
           )}
         </div>

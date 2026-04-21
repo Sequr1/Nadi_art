@@ -15,7 +15,7 @@ const builder = imageUrlBuilder(sanityClient);
 export function urlFor(source: any) {
   if (!source) return null;
   
-  // Если это уже строка (URL), возвращаем объект-заглушку, который вернет этот URL
+  // Если это уже строка (URL), возвращаем объект-заглушку
   if (typeof source === 'string' && (source.startsWith('http') || source.startsWith('/'))) {
     return {
       url: () => source,
@@ -25,9 +25,12 @@ export function urlFor(source: any) {
   }
 
   try {
-    return builder.image(source);
+    // Проверяем, что это объект с ассетом, как ожидает Sanity
+    if (typeof source === 'object' && (source.asset || source._ref)) {
+      return builder.image(source);
+    }
+    return null;
   } catch (err) {
-    console.error('urlFor error:', err);
     return null;
   }
 }
