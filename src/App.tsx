@@ -8,6 +8,10 @@ import WorkshopPage from './pages/WorkshopPage';
 import InstallationPage from './pages/InstallationPage';
 import ProjectPage from './pages/ProjectPage';
 import ThoughtsPage from './pages/ThoughtsPage';
+import GalleryPage from './pages/GalleryPage';
+import WorkshopsPage from './pages/WorkshopsPage';
+import InstallationsPage from './pages/InstallationsPage';
+import ProjectsPage from './pages/ProjectsPage';
 
 export function App() {
   return (
@@ -17,6 +21,10 @@ export function App() {
         <Route path="/" element={<MainPage />} />
         <Route path="/enter" element={<Landing />} />
         <Route path="/thoughts" element={<ThoughtsPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/workshops" element={<WorkshopsPage />} />
+        <Route path="/installations" element={<InstallationsPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/state/:slug" element={<StatePage />} />
         <Route path="/workshop/:slug" element={<WorkshopPage />} />
         <Route path="/installation/:slug" element={<InstallationPage />} />

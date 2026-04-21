@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Gallery from '../components/Gallery';
 import ContactModal from '../components/ContactModal';
 import { sanityClient, queries } from '../lib/sanity';
+import { urlFor } from '../lib/sanity';
 
 export default function MainPage() {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ export default function MainPage() {
   const [workshops, setWorkshops] = useState<any[]>([]);
   const [installations, setInstallations] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
+  const [paintings, setPaintings] = useState<any[]>([]);
   const [paintingsCount, setPaintingsCount] = useState(0);
 
   useEffect(() => {
@@ -20,12 +21,20 @@ export default function MainPage() {
       sanityClient.fetch(queries.allWorkshops),
       sanityClient.fetch(queries.allInstallations),
       sanityClient.fetch(queries.allProjects),
+      sanityClient.fetch(`*[_type == "painting"] | order(order asc)[0...6]{
+        _id,
+        title,
+        "slug": slug.current,
+        image,
+        "imageUrl": image.asset->url
+      }`),
       sanityClient.fetch(`count(*[_type == "painting"])`),
     ])
-      .then(([w, i, p, pc]) => {
+      .then(([w, i, p, pt, pc]) => {
         setWorkshops(w || []);
         setInstallations(i || []);
         setProjects(p || []);
+        setPaintings(pt || []);
         setPaintingsCount(pc || 0);
       })
       .catch(console.error);
@@ -55,12 +64,30 @@ export default function MainPage() {
   };
 
   // Плавный скролл
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const paintingsRef = useRef<HTMLDivElement>(null);
+  const workshopsRef = useRef<HTMLDivElement>(null);
+  const installationsRef = useRef<HTMLDivElement>(null);
+  const projectsRef = useRef<HTMLDivElement>(null);
+
   const scrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    setTimeout(() => {
-      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    const refs: { [key: string]: React.RefObject<HTMLDivElement> } = {
+      paintings: paintingsRef,
+      workshops: workshopsRef,
+      installations: installationsRef,
+      projects: projectsRef,
+    };
+
+    const targetRef = refs[sectionId];
+    if (targetRef?.current) {
+      const navHeight = 80; // Высота фиксированной навигации
+      const elementPosition = targetRef.current.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const categories = [
@@ -260,11 +287,7 @@ export default function MainPage() {
             <button
               key={cat.id}
               onClick={() => scrollToSection(cat.id)}
-              className={`group relative overflow-hidden rounded-2xl p-4 md:p-5 text-left transition-all duration-500 ${
-                activeSection === cat.id 
-                  ? `bg-gradient-to-br ${cat.gradient} shadow-lg shadow-lavender/20` 
-                  : 'bg-white/60 hover:bg-white/80'
-              }`}
+              className={`group relative overflow-hidden rounded-2xl p-4 md:p-5 text-left transition-all duration-500 bg-white/60 hover:bg-white/80 hover:shadow-lg hover:shadow-lavender/10`}
             >
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-100 scale-0">
                 <svg className="w-6 h-6 text-lavender/60 animate-flower-bloom" viewBox="0 0 24 24" fill="currentColor">
@@ -272,16 +295,9 @@ export default function MainPage() {
                 </svg>
               </div>
               <div className="relative">
-                <h3 className={`font-serif text-base md:text-lg mb-1 transition-all duration-500 break-words ${activeSection === cat.id ? 'text-amethyst animate-pulse-colors' : 'text-text-primary'}`}>
+                <h3 className="font-serif text-base md:text-lg mb-1 transition-all duration-500 break-words text-text-primary group-hover:text-amethyst">
                   {cat.title}
                 </h3>
-                {activeSection === cat.id && (
-                  <div className="absolute -top-3 left-0 right-0 flex justify-center gap-2 pointer-events-none">
-                    <span className="text-xs animate-hearts-rise" style={{ animationDelay: '0s' }}>💜</span>
-                    <span className="text-xs animate-hearts-rise" style={{ animationDelay: '0.3s' }}>💜</span>
-                    <span className="text-xs animate-hearts-rise" style={{ animationDelay: '0.6s' }}>💜</span>
-                  </div>
-                )}
               </div>
               <p className="text-text-muted text-xs flex items-center gap-1">
                 <span className="opacity-70">{cat.icon}</span>
@@ -312,105 +328,199 @@ export default function MainPage() {
         </div>
       </div>
 
-      {/* Развернутый раздел */}
-      <section ref={sectionRef} className="px-6 md:px-12 pb-20 bg-white/30 animate-fade-in scroll-mt-24">
+      {/* РАЗДЕЛ 1: КАРТИНЫ */}
+      <section ref={paintingsRef} className="px-6 md:px-12 py-20 bg-white/30 scroll-mt-24">
         <div className="max-w-7xl mx-auto">
-          {/* Заголовок текущего раздела */}
-          <div className="text-center mb-12">
-            <h2 className="font-serif font-light text-2xl md:text-3xl text-text-primary mb-3">
-              {activeSection === 'paintings' ? 'Картины' :
-               activeSection === 'workshops' ? 'Мастер-классы' :
-               activeSection === 'installations' ? 'Инсталляции' :
-               activeSection === 'projects' ? 'Проекты' : 'Раздел'}
-            </h2>
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="font-serif font-light text-4xl md:text-5xl text-text-primary mb-4">Картины</h2>
+              <p className="text-text-secondary font-light text-lg">Шесть мгновений, застывших на холсте. Каждая работа — это исследование цвета и состояния.</p>
+            </div>
+            <Link 
+              to="/gallery" 
+              className="group flex items-center gap-3 px-8 py-4 bg-white border border-lavender-soft rounded-full text-amethyst hover:bg-amethyst hover:text-white transition-all duration-500 shadow-sm"
+            >
+              <span className="font-medium">Перейти к галерее</span>
+              <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </div>
 
-          {/* Контент: Картины */}
-          {activeSection === 'paintings' && <Gallery showFilters />}
-          
-          {/* Контент: Мастер-классы */}
-          {activeSection === 'workshops' && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedWorkshops.map((item: any) => (
-                <div
-                  key={item?._id || Math.random()}
-                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                  onClick={() => item?.slug && navigate(`/workshop/${item.slug}`)}
-                >
-                  <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                    {item?.heroImage ? (
-                      <img
-                        src={urlFor(item.heroImage)?.width(800)?.url() || '/nadi.png'}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
-                    )}
-                  </div>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {paintings.map((painting, index) => (
+              <div 
+                key={painting._id} 
+                className="group relative aspect-[3/4] overflow-hidden rounded-3xl bg-lavender-soft cursor-pointer"
+                onClick={() => navigate(`/painting/${painting.slug}`)}
+              >
+                <img 
+                  src={urlFor(painting.image)?.width(800)?.url() || '/nadi.png'} 
+                  alt={painting.title}
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+                  <h3 className="text-white font-serif text-2xl mb-2">{painting.title}</h3>
+                  <span className="text-white/80 text-sm">Смотреть работу →</span>
                 </div>
-              ))}
-              {sortedWorkshops.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Мастер-классы скоро появятся</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* РАЗДЕЛ 2: МАСТЕР-КЛАССЫ */}
+      <section ref={workshopsRef} className="px-6 md:px-12 py-24 bg-milk relative overflow-hidden scroll-mt-24">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-serif font-light text-4xl md:text-5xl text-text-primary mb-4">Мастер-классы</h2>
+            <p className="text-text-secondary font-light text-lg max-w-2xl mx-auto">Опыт создания, где важна не форма, а ваше внутреннее открытие.</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            {sortedWorkshops.slice(0, 2).map((item: any) => (
+              <div 
+                key={item?._id}
+                className="flex flex-col md:flex-row gap-8 bg-white/50 backdrop-blur-sm rounded-[40px] p-8 md:p-10 hover:shadow-2xl hover:shadow-lavender/10 transition-all duration-700 cursor-pointer border border-white/50"
+                onClick={() => item?.slug && navigate(`/workshop/${item.slug}`)}
+              >
+                <div className="w-full md:w-1/2 aspect-square rounded-3xl overflow-hidden shadow-inner">
+                  <img
+                    src={urlFor(item.heroImage)?.width(800)?.url() || '/nadi.png'}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                </div>
+                <div className="w-full md:w-1/2 flex flex-col justify-center">
+                  <h3 className="font-serif text-3xl text-text-primary mb-4">{item?.title}</h3>
+                  <p className="text-text-secondary font-light leading-relaxed mb-8 line-clamp-6">
+                    {item?.description}
+                  </p>
+                  <div className="mt-auto">
+                    <span className="text-amethyst font-medium inline-flex items-center gap-2 group">
+                      Узнать подробнее
+                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link 
+              to="/workshops"
+              className="inline-block px-10 py-4 bg-amethyst text-white rounded-full hover:bg-violet-deep transition-all duration-500 shadow-lg shadow-amethyst/20"
+            >
+              Посмотреть все мастер-классы
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* РАЗДЕЛ 3: ИНСТАЛЛЯЦИИ */}
+      <section ref={installationsRef} className="px-6 md:px-12 py-24 bg-gradient-to-b from-white to-milk scroll-mt-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="font-serif font-light text-4xl md:text-5xl text-text-primary mb-4">Инсталляции</h2>
+            <p className="text-text-secondary font-light text-lg">Пространство как продолжение идеи.</p>
+          </div>
+
+          {sortedInstallations.length > 0 && (
+            <div 
+              className="relative rounded-[60px] overflow-hidden bg-black group cursor-pointer aspect-[21/9] mb-12"
+              onClick={() => navigate(`/installation/${sortedInstallations[0].slug}`)}
+            >
+              {/* Карусель (имитация медленного движения) */}
+              <div className="absolute inset-0 flex">
+                <div className="w-full h-full flex animate-slow-carousel">
+                  <img 
+                    src={urlFor(sortedInstallations[0].heroImage)?.width(1600)?.url() || '/nadi.png'} 
+                    alt="" 
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Если есть галерея, можно добавить второе фото для зацикливания */}
+                  <img 
+                    src={urlFor(sortedInstallations[0].heroImage)?.width(1600)?.url() || '/nadi.png'} 
+                    alt="" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent flex flex-col justify-center p-12 md:p-20">
+                <div className="max-w-xl">
+                  <h3 className="text-white font-serif text-4xl md:text-6xl mb-6">{sortedInstallations[0].title}</h3>
+                  <p className="text-white/80 font-light text-lg mb-8 line-clamp-3">{sortedInstallations[0].description}</p>
+                  <span className="inline-flex items-center gap-3 px-8 py-3 bg-white text-black rounded-full font-medium hover:bg-amethyst hover:text-white transition-all duration-500">
+                    Исследовать инсталляцию
+                  </span>
+                </div>
+              </div>
             </div>
           )}
-          
-          {/* Контент: Инсталляции */}
-          {activeSection === 'installations' && (
-            <div className="grid md:grid-cols-2 gap-6">
-              {sortedInstallations.map((item: any) => (
-                <div
-                  key={item?._id || Math.random()}
-                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden"
-                  onClick={() => item?.slug && navigate(`/installation/${item.slug}`)}
-                >
-                  <div className="aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                    {item?.heroImage ? (
-                      <img 
-                        src={urlFor(item.heroImage)?.width(1200)?.url() || '/nadi.png'} 
-                        alt="" 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
-                    )}
-                  </div>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
-                </div>
-              ))}
-              {sortedInstallations.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Инсталляции скоро появятся</p>}
+
+          <div className="flex justify-center">
+            <Link 
+              to="/installations"
+              className="group flex items-center gap-3 text-text-primary hover:text-amethyst transition-colors"
+            >
+              <span className="text-lg font-light">Показать все инсталляции</span>
+              <div className="w-12 h-px bg-lavender group-hover:w-20 group-hover:bg-amethyst transition-all duration-500" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* РАЗДЕЛ 4: ПРОЕКТЫ */}
+      <section ref={projectsRef} className="px-6 md:px-12 py-24 bg-white scroll-mt-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-end mb-16">
+            <div>
+              <h2 className="font-serif font-light text-4xl md:text-5xl text-text-primary mb-4">Проекты</h2>
+              <p className="text-text-secondary font-light text-lg">Коллаборации и творческие исследования.</p>
             </div>
-          )}
-          
-          {/* Контент: Проекты */}
-          {activeSection === 'projects' && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedProjects.map((item: any) => (
-                <div 
-                  key={item?._id || Math.random()} 
-                  className="group card-soft p-5 hover:bg-white cursor-pointer relative overflow-hidden" 
-                  onClick={() => item?.slug && navigate(`/project/${item.slug}`)}
-                >
-                  <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-lavender-soft">
-                    {item?.coverImage ? (
-                      <img 
-                        src={urlFor(item.coverImage)?.width(1200)?.url() || '/nadi.png'} 
-                        alt="" 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">Нет фото</div>
-                    )}
-                  </div>
-                  <h3 className="font-serif text-lg text-text-primary mb-2 group-hover:text-amethyst transition-colors">{item?.title || 'Без названия'}</h3>
-                  <p className="text-text-secondary text-sm font-light line-clamp-2">{item?.description}</p>
+          </div>
+
+          <div className="space-y-12">
+            {sortedProjects.slice(0, 3).map((item: any) => (
+              <div 
+                key={item?._id} 
+                className="group flex items-start gap-8 pb-12 border-b border-lavender-soft last:border-0 cursor-pointer" 
+                onClick={() => item?.slug && navigate(`/project/${item.slug}`)}
+              >
+                <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-lavender-soft">
+                  <img 
+                    src={urlFor(item.coverImage)?.width(200)?.url() || '/nadi.png'} 
+                    alt="" 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                  />
                 </div>
-              ))}
-              {sortedProjects.length === 0 && <p className="col-span-full text-center py-12 text-text-muted font-light">Проекты скоро появятся</p>}
-            </div>
-          )}
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-serif text-2xl text-text-primary group-hover:text-amethyst transition-colors">{item?.title}</h3>
+                    <span className="text-text-muted text-sm font-light mt-2">{item?.startDate || 'Текущий'}</span>
+                  </div>
+                  <p className="text-text-secondary font-light line-clamp-2 max-w-2xl">{item?.description}</p>
+                </div>
+                <div className="hidden md:flex self-center">
+                  <div className="w-10 h-10 rounded-full border border-lavender-soft flex items-center justify-center group-hover:bg-amethyst group-hover:border-amethyst transition-all duration-500">
+                    <svg className="w-4 h-4 text-amethyst group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-16 text-center">
+            <Link to="/projects" className="text-amethyst border-b border-amethyst/30 hover:border-amethyst transition-all pb-1">
+              Смотреть все проекты
+            </Link>
+          </div>
         </div>
       </section>
 
